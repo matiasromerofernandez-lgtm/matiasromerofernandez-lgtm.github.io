@@ -69,7 +69,7 @@
 </div>
 <div class="bandeja" id="bandeja" aria-label="Todas las imágenes del archivo"></div>
 
-<script src="data.js?v=20"></script>
+<script src="data.js?v=21"></script>
 <script src="recortes.js?v=4"></script>
 <script src="piezas.js?v=5"></script>
 <script src="sitio.js?v=16"></script>
@@ -97,7 +97,9 @@
     return h.toString(36);
   }
   S.P.forEach(function (p) {
+    var fuera = p.fueraDeLaMesa || [];   /* las que siguen en la serie pero no van a la mesa */
     p.imagenes.forEach(function (src) {
+      if (fuera.indexOf(src) >= 0) return;
       var i = archivo.length, clave = src.replace('https://payload.cargocollective.com', ''), cod = codigoDe(clave);
       /* las fotos con marco (fabiolo) van sin el marco.
          Las grupales (varias fotos en una imagen) van sin el blanco de fondo: transparente.

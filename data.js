@@ -20,6 +20,8 @@
     portada   (opcional) una sola imagen para la portada del proyecto:
               {"src": imagen, "recorte": [ancho, alto, izquierda, arriba, derecha, abajo]}
     oculto    (opcional) true = no aparece en ningún lado (para esconderlo por un tiempo)
+    fueraDeLaMesa (opcional) imágenes de la lista que siguen en la serie pero no aparecen
+              en la mesa de trabajo (copiá la misma dirección que en "imagenes")
     estrofas  (opcional, textos) el texto de la obra, una lista por página
     pdf       (opcional, textos) archivo PDF para descargar
     seccion   (opcional) "textos" = va en la sección de textos, no entre las imágenes
@@ -323,7 +325,10 @@ window.PROYECTOS = [
       "https://payload.cargocollective.com/1/21/683453/14407907/Sin-titulo-3ssss_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14407907/repuesto-de-dios-37a-16_31_2000_c.png"
     ],
-    "videos": []
+    "videos": [],
+    "fueraDeLaMesa": [
+      "https://payload.cargocollective.com/1/21/683453/14407907/repuesto-de-dios-37a-13_25_2000_c.png"
+    ]
   },
   {
     "slug": "dollhouse",
