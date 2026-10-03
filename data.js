@@ -883,8 +883,7 @@ window.PROYECTOS = [
       "https://payload.cargocollective.com/1/21/683453/13090265/cerouno20_1078.jpg",
       "https://payload.cargocollective.com/1/21/683453/13090265/cerouno21_1078.jpg",
       "https://payload.cargocollective.com/1/21/683453/13090265/cerouno22_1078.jpg",
-      "https://payload.cargocollective.com/1/21/683453/13090265/cerouno-mm_1078.jpg",
-      "https://payload.cargocollective.com/1/21/683453/13090265/0115_1224.jpg"
+      "https://payload.cargocollective.com/1/21/683453/13090265/cerouno-mm_1078.jpg"
     ],
     "videos": []
   },
