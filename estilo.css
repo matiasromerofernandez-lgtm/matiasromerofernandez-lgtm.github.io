@@ -423,21 +423,18 @@ body.montaje { height: 100vh; height: 100svh; display: flex; flex-direction: col
 }
 .herramientas button:hover { color: var(--accent); }
 .herramientas .aviso { font-size: 17px; color: var(--mute); }
-/* la lista de "x series": se abre debajo de los botones, encima de la mesa */
+/* la lista de "x series": solo texto, los nombres seguidos, debajo de los botones */
 .herramientas { position: relative; z-index: 40; }
 .lista-series {
-  position: absolute; left: var(--pad); top: calc(100% - 10px);
-  max-height: min(62vh, 560px); overflow-y: auto;
-  column-count: 2; column-gap: 36px;
-  padding: 12px 20px; background: var(--bg); border: 1px solid var(--line);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  position: absolute; left: var(--pad); right: var(--pad); top: calc(100% - 14px);
+  display: flex; flex-wrap: wrap; gap: 0 20px;
+  padding: 0 0 12px; background: var(--bg);
+  max-height: 60vh; overflow-y: auto;
 }
 .lista-series[hidden] { display: none; }
-.herramientas .lista-series button { display: block; width: 100%; text-align: left; text-decoration: none; padding: 3px 0; white-space: nowrap; break-inside: avoid; }
-.herramientas .lista-series button.al-azar { color: var(--mute); }
-.herramientas .lista-series button.actual { color: var(--accent); }
-.herramientas .lista-series button:hover { color: var(--accent); }
-@media (max-width: 600px) { .lista-series { column-count: 1; right: var(--pad); } }
+.herramientas .lista-series button { font-size: 17px; color: var(--mute); text-decoration: none; padding: 2px 0; white-space: nowrap; }
+.herramientas .lista-series button:hover { color: var(--ink); }
+.herramientas .lista-series button.actual { color: var(--ink); text-decoration: underline; }
 /* la cartela de la serie colgada, abajo a la izquierda, como en una sala */
 .cartela { position: absolute; left: 0; bottom: 4px; z-index: 2; font-size: 17px; color: var(--mute); text-decoration: none; cursor: pointer; }
 .cartela[hidden] { display: none; }
