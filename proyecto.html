@@ -81,7 +81,14 @@
   document.getElementById('titulo').textContent = p.titulo;
   document.getElementById('anio').textContent = p.anio || '';
   document.getElementById('tecnica').textContent = p.tecnica || '';
-  document.getElementById('donde').textContent = p.donde ? 'Encontrado en: ' + p.donde : '';
+  /* "Encontrado en" no se muestra si la técnica ya lo dice
+     (Capturas de tours virtuales / tours virtuales) */
+  var yaDicho = p.donde && (p.tecnica || '').toLowerCase().indexOf(p.donde.toLowerCase()) >= 0;
+  document.getElementById('donde').textContent = p.donde && !yaDicho ? 'Encontrado en: ' + p.donde : '';
+  ['anio', 'tecnica', 'donde'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el.textContent) el.remove();
+  });
 
   /* galería: todas las imágenes, en orden, y después los videos */
   var gal = document.getElementById('galeria');

@@ -54,13 +54,8 @@
     lista.appendChild(a);
   }
   S.P.forEach(fila);
-  if (S.T.length) {
-    var t = document.createElement('p');
-    t.className = 'seccion';
-    t.textContent = 'TEXTOS';
-    lista.appendChild(t);
-    S.T.forEach(fila);
-  }
+  /* la canción del tiempo va al final, sin subtítulo, siguiendo la numeración */
+  S.T.forEach(function (p, k) { fila(p, S.P.length + k); });
 })();
 </script>
 </body>

@@ -6,7 +6,9 @@
 
     slug      nombre corto para la dirección (sin espacios ni acentos)
     titulo    cómo aparece el nombre
-    donde     dónde se encontró / se hizo la imagen ("encontrado en ...")
+    donde     dónde se encontró / se hizo la imagen ("encontrado en ...").
+              Si la técnica ya lo dice (por ejemplo "Capturas de tours virtuales"),
+              en la página de la serie no se repite.
     anio      año (dejalo "" si todavía no está)
     tecnica   técnica (dejala "" si no querés que aparezca)
     texto     2 o 3 líneas sobre el proyecto
