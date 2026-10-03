@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Jacquarda+Bastarda+9&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="estilo.css?v=39">
+<link rel="stylesheet" href="estilo.css?v=40">
 </head>
 <body class="montaje">
 <header class="cabecera">
@@ -587,6 +587,14 @@
     cartelaTexto.href = S.enlace(p);
     cartela.hidden = false;
   }
+  /* en la compu la cartela va arriba, en la línea de los botones; en el celular, abajo de la mesa */
+  var herramientas = document.querySelector('.herramientas');
+  function ubicarCartela() {
+    var arriba = !angosta(), destino = arriba ? herramientas : mesa;
+    if (cartela.parentNode !== destino) destino.appendChild(cartela);
+    cartela.classList.toggle('arriba', arriba);
+  }
+  ubicarCartela();
 
   document.getElementById('vaciar').addEventListener('click', function () {
     piezas.slice().forEach(sacar);
@@ -653,7 +661,7 @@
     if (e.key === '+' || e.key === '=') zoom(1.25);
     if (e.key === '-') zoom(0.8);
   });
-  window.addEventListener('resize', function () { piezas.forEach(ubicar); });
+  window.addEventListener('resize', function () { piezas.forEach(ubicar); ubicarCartela(); });
 
   /* al abrir: un montaje compartido, o uno al azar para empezar */
   aplicarVista();

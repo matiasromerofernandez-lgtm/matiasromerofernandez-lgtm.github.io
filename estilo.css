@@ -430,9 +430,12 @@ body.montaje { height: 100vh; height: 100svh; display: flex; flex-direction: col
 .cartela a { color: var(--mute); text-decoration: none; cursor: pointer; }
 .cartela b { font-weight: 400; color: var(--ink); text-shadow: 1px 0 0 currentColor; }
 .cartela a:hover b { color: var(--accent); }
-.cartela .flecha { font: inherit; font-size: 28px; line-height: 1; color: var(--mute); background: none; border: 0; padding: 4px 8px; cursor: pointer; }
+.cartela .flecha { font: inherit; font-size: 28px; line-height: 1; color: var(--mute); background: none; border: 0; padding: 4px 8px; cursor: pointer; text-decoration: none; }
 .cartela .flecha:first-child { margin-left: -8px; }
 .cartela .flecha:hover { color: var(--ink); }
+/* en la compu va arriba, al final de la línea de los botones */
+.cartela.arriba { position: static; margin-left: auto; margin-block: -6px; }   /* no agranda la línea de botones */
+.cartela.arriba .flecha:last-child { margin-right: -8px; }
 /* la mesa: con mucho blanco alrededor */
 .mesa { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; touch-action: none; margin: 0 calc(var(--pad) * 2.5); cursor: grab; }
 .mesa.moviendo { cursor: grabbing; }
