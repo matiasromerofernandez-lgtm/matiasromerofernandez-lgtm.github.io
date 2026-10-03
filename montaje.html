@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Jacquarda+Bastarda+9&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="estilo.css?v=36">
+<link rel="stylesheet" href="estilo.css?v=37">
 </head>
 <body class="montaje">
 <header class="cabecera">
@@ -41,7 +41,7 @@
 
 <div class="herramientas">
   <button type="button" id="azar">colgar al azar</button>
-  <button type="button" id="series">x series</button>
+  <button type="button" id="series" aria-haspopup="true" aria-expanded="false" aria-controls="lista-series">x series</button>
   <button type="button" id="vaciar">vaciar</button>
   <button type="button" id="compartir">compartir</button>
   <span class="zoom" role="group" aria-label="Zoom">
@@ -50,6 +50,7 @@
     <button type="button" id="acercar" aria-label="Acercar">+</button>
   </span>
   <span class="aviso" id="aviso" aria-live="polite"></span>
+  <div class="lista-series" id="lista-series" role="group" aria-label="Elegir una serie" hidden></div>
 </div>
 
 <main class="mesa" id="mesa" aria-label="Mesa de trabajo: armá tu montaje">
@@ -541,13 +542,52 @@
       if (cola.length > 1 && cola[0] === ultima) cola.push(cola.shift());
     }
     ultima = cola.shift();
+    /* que "una al azar" no repita la que ya está colgada */
+    if (ultima === serieActual && cola.length) { cola.push(ultima); ultima = cola.shift(); }
     return ultima;
   }
-  document.getElementById('series').addEventListener('click', function () {
-    var p = siguienteSerie();
+  function colgarSerie(p) {
     mostrarSerie(null);
     colgar(poolDe(p));
     mostrarSerie(p);
+  }
+
+  /* el botón "x series" abre la lista: se elige una serie, o una al azar */
+  var botonSeries = document.getElementById('series');
+  var listaSeries = document.getElementById('lista-series');
+  function opcion(texto, alElegir, p) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = texto;
+    if (p) b.dataset.slug = p.slug; else b.className = 'al-azar';
+    b.addEventListener('click', function () { cerrarLista(); alElegir(); });
+    listaSeries.appendChild(b);
+  }
+  opcion('una al azar', function () { colgarSerie(siguienteSerie()); });
+  conSerie.forEach(function (p) { opcion(p.titulo, function () { colgarSerie(p); }, p); });
+  function abrirLista() {
+    [].forEach.call(listaSeries.children, function (b) {
+      var es = !!serieActual && b.dataset.slug === serieActual.slug;
+      b.classList.toggle('actual', es);
+      if (es) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+    });
+    listaSeries.hidden = false;
+    botonSeries.setAttribute('aria-expanded', 'true');
+    (listaSeries.querySelector('.actual') || listaSeries.firstChild).focus({ preventScroll: true });
+  }
+  function cerrarLista() {
+    listaSeries.hidden = true;
+    botonSeries.setAttribute('aria-expanded', 'false');
+  }
+  botonSeries.addEventListener('click', function () {
+    if (listaSeries.hidden) abrirLista(); else cerrarLista();
+  });
+  /* se cierra al tocar afuera o con Esc */
+  document.addEventListener('pointerdown', function (e) {
+    if (!listaSeries.hidden && !listaSeries.contains(e.target) && !botonSeries.contains(e.target)) cerrarLista();
+  }, true);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !listaSeries.hidden) { cerrarLista(); botonSeries.focus(); }
   });
 
   /* la cartela: qué serie está colgada */
