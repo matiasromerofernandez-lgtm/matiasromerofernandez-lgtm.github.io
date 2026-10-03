@@ -423,23 +423,16 @@ body.montaje { height: 100vh; height: 100svh; display: flex; flex-direction: col
 }
 .herramientas button:hover { color: var(--accent); }
 .herramientas .aviso { font-size: 17px; color: var(--mute); }
-/* la lista de "x series": solo texto, los nombres seguidos, debajo de los botones */
-.herramientas { position: relative; z-index: 40; }
-.lista-series {
-  position: absolute; left: var(--pad); right: var(--pad); top: calc(100% - 14px);
-  display: flex; flex-wrap: wrap; gap: 0 20px;
-  padding: 0 0 12px; background: var(--bg);
-  max-height: 60vh; overflow-y: auto;
-}
-.lista-series[hidden] { display: none; }
-.herramientas .lista-series button { font-size: 17px; color: var(--mute); text-decoration: none; padding: 2px 0; white-space: nowrap; }
-.herramientas .lista-series button:hover { color: var(--ink); }
-.herramientas .lista-series button.actual { color: var(--ink); text-decoration: underline; }
-/* la cartela de la serie colgada, abajo a la izquierda, como en una sala */
-.cartela { position: absolute; left: 0; bottom: 4px; z-index: 2; font-size: 17px; color: var(--mute); text-decoration: none; cursor: pointer; }
+/* la cartela de la serie colgada, abajo a la izquierda, como en una sala:
+   ‹ nombre, año ›  — las flechas pasan a la serie anterior o la siguiente */
+.cartela { position: absolute; left: 0; bottom: 4px; z-index: 2; display: flex; align-items: center; gap: 2px; font-size: 17px; color: var(--mute); }
 .cartela[hidden] { display: none; }
+.cartela a { color: var(--mute); text-decoration: none; cursor: pointer; }
 .cartela b { font-weight: 400; color: var(--ink); text-shadow: 1px 0 0 currentColor; }
-.cartela:hover b { color: var(--accent); }
+.cartela a:hover b { color: var(--accent); }
+.cartela .flecha { font: inherit; font-size: 28px; line-height: 1; color: var(--mute); background: none; border: 0; padding: 4px 8px; cursor: pointer; }
+.cartela .flecha:first-child { margin-left: -8px; }
+.cartela .flecha:hover { color: var(--ink); }
 /* la mesa: con mucho blanco alrededor */
 .mesa { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; touch-action: none; margin: 0 calc(var(--pad) * 2.5); cursor: grab; }
 .mesa.moviendo { cursor: grabbing; }
