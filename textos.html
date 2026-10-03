@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Textos — Matías Romero</title>
+<meta name="description" content="Matías Romero, artista visual. Buenos Aires. Obras hechas con imágenes encontradas: tours virtuales, Google Maps, videojuegos, carteles.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Matías Romero">
+<meta property="og:title" content="Textos — Matías Romero">
+<meta property="og:description" content="Matías Romero, artista visual. Buenos Aires. Obras hechas con imágenes encontradas: tours virtuales, Google Maps, videojuegos, carteles.">
+<!-- vista previa al compartir: cuando el sitio tenga dominio, poné la dirección completa, por ejemplo https://matiasromero.com/img/og.jpg -->
+<meta property="og:image" content="img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Jacquarda+Bastarda+9&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css?v=34">
+</head>
+<body>
+<header class="cabecera">
+  <a class="nombre" href="index.html">Matías Romero</a>
+  <nav>
+    <a href="indice.html">series</a>
+    <a href="montaje.html">mesa de trabajo</a>
+    <a href="textos.html" aria-current="page">textos</a>
+    <a href="info.html">info</a>
+  </nav>
+</header>
+
+<main class="textos" id="textos"></main>
+
+<script src="data.js?v=19"></script>
+<script src="recortes.js?v=4"></script>
+<script src="sitio.js?v=16"></script>
+<script>
+(function () {
+  var S = window.Sitio;
+  var cont = document.getElementById('textos');
+  S.T.forEach(function (p) {
+    var sec = document.createElement('article');
+    sec.className = 'texto-obra';
+    sec.id = p.slug;
+    var cab = document.createElement('header');
+    cab.innerHTML = '<h1></h1><p class="gris datos"></p>';
+    cab.querySelector('h1').textContent = p.titulo;
+    cab.querySelector('.datos').textContent = [p.anio, p.tecnica, p.donde ? 'Encontrado en: ' + p.donde : ''].filter(Boolean).join(' · ');
+    sec.appendChild(cab);
+    if (p.pdf) {
+      var d = document.createElement('a');
+      d.className = 'descarga';
+      d.href = p.pdf;
+      d.setAttribute('download', '');
+      d.textContent = 'descargar pdf';
+      cab.appendChild(d);
+    }
+    if (p.estrofas) {
+      /* el texto como texto, sin imágenes */
+      var cuerpo = document.createElement('div');
+      cuerpo.className = 'poema';
+      p.estrofas.forEach(function (est) {
+        var e = document.createElement('div');
+        e.className = 'estrofa';
+        est.forEach(function (linea) {
+          var l = document.createElement('p');
+          l.textContent = linea;
+          e.appendChild(l);
+        });
+        cuerpo.appendChild(e);
+      });
+      sec.appendChild(cuerpo);
+    } else {
+      var paginas = document.createElement('div');
+      paginas.className = 'paginas';
+      p.imagenes.forEach(function (src, k) { paginas.appendChild(S.imagen(src, p.titulo + ', página ' + (k + 1), k > 0)); });
+      sec.appendChild(paginas);
+    }
+    cont.appendChild(sec);
+  });
+})();
+</script>
+</body>
+</html>

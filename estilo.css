@@ -1,0 +1,514 @@
+:root {
+  --bg: #FFFFFF;
+  --ink: #1B1D21;
+  --mute: #5B6068;
+  --line: #C9CDD3;
+  --accent: #3F72B0;
+  --pad: clamp(16px, 4vw, 40px);
+  --desfase: 6px;
+  --alto: min(66vh, 640px);     /* alto de la tira */
+  --franja: min(72vh, 700px);   /* alto de la obra en la página de proyecto */
+}
+
+/* imagen recortada (sin bordes blancos) */
+.recorte { display: block; position: relative; overflow: hidden; aspect-ratio: var(--ar); }
+.recorte img { position: absolute; max-width: none; height: auto; display: block; }
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Jacquarda Bastarda 9", "Jost", serif;   /* toda la página en la pixelada */
+  font-size: 19px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* ---------- cabecera ---------- */
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px 24px;
+  padding: 24px var(--pad) 20px;
+}
+.cabecera .nombre { font-size: 18px; font-weight: 500; letter-spacing: 0.02em; }
+/* nombre y menú: Jacquarda Bastarda 9, caligrafía hecha con píxeles */
+.cabecera .nombre, .cabecera nav a {
+  font-family: "Jacquarda Bastarda 9", "Jost", serif;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.2;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+.cabecera .nombre { font-size: 27px; }
+.cabecera nav a { font-size: 21px; }
+
+.cabecera nav { display: flex; gap: 28px; }
+.cabecera nav a { padding: 6px 0; }
+.cabecera nav a[aria-current="page"] { text-decoration: underline; text-underline-offset: 4px; }
+
+/* ---------- la profundidad (home) ---------- */
+body.profundidad { height: 100vh; height: 100svh; overflow: hidden; }
+.cabecera.flotante { position: fixed; top: 0; left: 0; right: 0; z-index: 10; }
+.escena3d {
+  position: fixed;
+  inset: 0;
+  perspective: 760px;
+  overflow: hidden;
+  touch-action: none;
+}
+.mundo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
+.pieza {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  will-change: transform, opacity;
+}
+/* en la portada, el nombre, el menú y la leyenda van sin fondo: las imágenes pasan por detrás
+   y el texto se invierte sobre ellas para seguir leyéndose */
+.profundidad .cabecera, .profundidad .pie3d { color: #FFFFFF; mix-blend-mode: difference; }
+.profundidad .cabecera a { color: #FFFFFF; }
+.profundidad .leyenda3d { color: #FFFFFF; }
+.escena3d.esfera { perspective: 700px; cursor: grab; user-select: none; -webkit-user-select: none; }
+.escena3d.esfera.arrastrando { cursor: grabbing; }
+.esfera .pieza { -webkit-user-drag: none; }
+.escena3d .pieza img { filter: url(#sin-blanco); }
+.pieza .recorte { width: 100%; }
+.pieza img.entera { display: block; width: 100%; height: auto; }
+.pie3d {
+  position: fixed;
+  left: var(--pad);
+  right: var(--pad);
+  bottom: 22px;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  font-size: 14px;
+  pointer-events: none;
+}
+.leyenda3d { color: var(--ink); min-height: 1.4em; }
+.ayuda { color: var(--mute); }
+@media (hover: none) { .ayuda { display: none; } }
+
+/* ---------- la grilla (versión anterior, grilla.html) ---------- */
+body.inicio {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+.escena {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--pad) 28px;
+}
+.marco {
+  /* 9 columnas × 3 filas, con celdas de la misma proporción que las tomas de www */
+  width: min(100%, calc((100vh - 170px) * 3 * 0.6627));
+  width: min(100%, calc((100svh - 170px) * 3 * 0.6627));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.grilla {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: clamp(2px, 0.25vw, 4px);
+}
+.celda, .hueco {
+  position: relative;
+  display: block;
+  aspect-ratio: 448 / 676;
+  overflow: hidden;
+}
+.celda { transition: opacity 0.25s; }
+.grilla:hover .celda { opacity: 0.5; }
+.grilla .celda:hover, .grilla .celda:focus-visible { opacity: 1; }
+.celda img.llena { display: block; width: 100%; height: 100%; object-fit: cover; }
+.celda img.ajustada { position: absolute; display: block; max-width: none; height: auto; }
+.leyenda-grilla { margin: 0; font-size: 14px; color: var(--mute); min-height: 1.4em; }
+
+@media (max-width: 1000px) {
+  .marco { width: 100%; }
+  .grilla { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .escena { align-items: flex-start; }
+}
+@media (max-width: 600px) {
+  .grilla { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grilla:hover .celda { opacity: 1; }
+}
+
+/* ---------- la tira (versión anterior, tira.html) ---------- */
+body.home {
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.tira {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: flex;
+  align-items: center;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.tira::-webkit-scrollbar { display: none; }
+.tira:focus { outline: none; }
+.tira .pista {
+  display: flex;
+  align-items: flex-start;
+  padding: 0 var(--pad);
+}
+.panel { flex: none; display: block; }
+.panel .cuadro {
+  position: relative;
+  height: var(--alto);
+  overflow: hidden;
+}
+.panel .cuadro .recorte { height: 100%; width: calc(var(--alto) * var(--ar)); }
+.panel .cuadro img.entera { display: block; height: 100%; width: auto; }
+.panel .cuadro.unidas { display: flex; gap: calc(var(--alto) * 0.0044); }
+.panel .cuadro.video { width: calc(var(--alto) * 1.6); background: #DCDFE3; }
+.panel .cuadro.video img.entera { width: 100%; object-fit: cover; }
+.panel .cuadro::after {            /* la costura */
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.55);
+}
+.panel .etiqueta {
+  display: block;
+  padding: 12px 0 0 8px;
+  font-size: 13px;
+  color: var(--mute);
+  white-space: nowrap;
+}
+.panel:hover .etiqueta { color: var(--ink); }
+.etiqueta .tipo { margin-left: 6px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+
+.pie {
+  padding: 14px var(--pad) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pie .leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+/* ---------- mini tira (índice en miniatura) ---------- */
+.mini {
+  display: flex;
+  gap: 2px;
+  height: 22px;
+  align-items: center;
+}
+.mini a {
+  display: block;
+  flex: 1 1 0;
+  min-width: 3px;
+  height: 22px;
+  position: relative;
+}
+.mini a::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 8px;
+  height: 6px;
+  background: #A6ACB4;
+  transition: background 0.15s, top 0.15s, height 0.15s;
+}
+.mini a:hover::before { background: var(--accent); top: 4px; height: 14px; }
+.mini a.actual::before { background: var(--ink); top: 2px; height: 18px; }
+
+/* ---------- página de proyecto ---------- */
+.franja {
+  display: flex;
+  height: var(--franja);
+  overflow: hidden;
+}
+.vecino {
+  flex: 0 0 clamp(28px, 8vw, 120px);
+  position: relative;
+  overflow: hidden;
+  transition: flex-basis 0.25s ease;
+}
+.vecino:hover { flex-basis: clamp(40px, 15vw, 220px); }
+.vecino .recorte { position: absolute; top: 0; height: 100%; width: calc(var(--franja) * var(--ar)); }
+.vecino.anterior .recorte { right: 0; transform: translateY(calc(var(--desfase) * -1)); }
+.vecino.siguiente .recorte { left: 0; transform: translateY(var(--desfase)); }
+.vecino img.entera { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vecino.anterior img.entera { object-position: right center; transform: translateY(calc(var(--desfase) * -1)); }
+.vecino.siguiente img.entera { object-position: left center; transform: translateY(var(--desfase)); }
+.obra {
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.obra::before, .obra::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 1;
+}
+.obra::before { left: 0; }
+.obra::after { right: 0; }
+.obra .recorte { width: min(100%, calc(var(--franja) * var(--ar))); }
+.obra img.entera { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; }
+.obra .marco-video { width: 100%; max-width: calc(var(--franja) * 16 / 9); aspect-ratio: 16 / 9; }
+.obra iframe, .video iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+.vecinos {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px var(--pad) 0;
+  font-size: 14px;
+  color: var(--mute);
+}
+.vecinos a { padding: 6px 0; }
+
+.contenido {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 56px var(--pad) 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+}
+.ficha { display: flex; flex-wrap: wrap; gap: 32px 48px; }
+.ficha .datos {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 15px;
+}
+.ficha h1 { margin: 0 0 10px; font-size: 34px; font-weight: 500; line-height: 1.15; }
+.ficha .gris { color: var(--mute); }
+.ficha .texto { flex: 2 1 460px; min-width: 0; margin: 0; font-size: 19px; line-height: 1.55; max-width: 680px; }
+
+.galeria { display: flex; flex-direction: column; align-items: center; gap: clamp(90px, 16vh, 180px); }
+.galeria .recorte { width: min(100%, calc(92vh * var(--ar))); }
+.galeria img.entera { display: block; max-width: 100%; max-height: 92vh; width: auto; height: auto; }
+.galeria.unidas { gap: 4px; }
+.video { width: 100%; aspect-ratio: 16 / 9; background: var(--ink); }
+
+.posicion { display: flex; flex-direction: column; gap: 10px; }
+.posicion span { font-size: 13px; color: var(--mute); }
+
+/* ---------- textos ---------- */
+.textos { max-width: 760px; margin: 0 auto; padding: 40px var(--pad) 120px; display: flex; flex-direction: column; gap: 120px; }
+.texto-obra header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 48px; }
+.texto-obra h1 { margin: 0; font-size: 34px; font-weight: 500; line-height: 1.15; }
+.texto-obra .datos { margin: 0; font-size: 15px; color: var(--mute); }
+.texto-obra .bajada { margin: 12px 0 0; font-size: 19px; line-height: 1.55; }
+.paginas { display: flex; flex-direction: column; gap: 40px; }
+.paginas .recorte { width: 100%; background: #FFFFFF; }
+.paginas img.entera { display: block; width: 100%; height: auto; }
+.lista .seccion { margin: 56px 0 0; font-size: 12px; letter-spacing: 0.14em; color: var(--mute); font-weight: 500; }
+
+/* ---------- índice ---------- */
+.lista { max-width: 1040px; margin: 0 auto; padding: 32px var(--pad) 96px; }
+.lista .fila {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 3fr) minmax(0, 3fr) 120px;
+  gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: baseline;
+}
+.lista .fila.titulos {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--mute);
+  border-bottom: 1.5px solid var(--ink);
+  padding-bottom: 10px;
+}
+.lista a.fila { font-size: 17px; }
+.lista a.fila .gris { color: var(--mute); }
+.lista a.fila:hover .gris { color: var(--accent); }
+.lista .num { font-size: 13px; color: var(--mute); font-variant-numeric: tabular-nums; }
+
+/* ---------- info ---------- */
+.info {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 32px var(--pad) 96px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 56px;
+}
+.info .bio { flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.info .bio p { margin: 0; }
+.info .bio .grande { font-size: 21px; line-height: 1.5; }
+.info .bio .statement { font-size: 17px; line-height: 1.6; color: #3A3E45; }
+.info .bio .contacto { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.info .cv { flex: 2 1 540px; min-width: 0; display: flex; flex-direction: column; gap: 36px; line-height: 1.55; }
+.info h2 { margin: 0 0 10px; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; color: var(--mute); }
+.info dl { margin: 0; display: grid; grid-template-columns: 84px minmax(0, 1fr); column-gap: 16px; row-gap: 6px; }
+.info dt { font-variant-numeric: tabular-nums; }
+.info dd { margin: 0; }
+
+@media (max-width: 640px) {
+  :root { --alto: 56vh; }
+  .lista .fila { grid-template-columns: 32px minmax(0, 1fr) 100px; }
+  .lista .fila .donde { display: none; }
+  .ficha h1 { font-size: 28px; }
+  .ficha .texto { font-size: 17px; }
+}
+
+/* la misma pixelada en la leyenda de la portada y en el nombre de cada proyecto */
+.pie3d, .ficha h1, .texto-obra h1, .lista a.fila .t {
+  font-family: "Jacquarda Bastarda 9", "Jost", serif;
+  font-weight: 400;
+  letter-spacing: 0;
+  -webkit-font-smoothing: none;
+}
+.pie3d { font-size: 21px; line-height: 1.2; }
+.ficha h1, .texto-obra h1 { font-size: 45px; line-height: 1.1; }
+@media (max-width: 640px) { .ficha h1, .texto-obra h1 { font-size: 36px; } }
+
+/* el texto de la canción del tiempo: en negro y en Jost (lo único del sitio que no va en la pixelada) */
+.descarga {
+  align-self: flex-start;
+  margin-top: 10px;
+  font-family: "Jacquarda Bastarda 9", "Jost", serif;
+  font-size: 21px;
+  -webkit-font-smoothing: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.poema { display: flex; flex-direction: column; gap: 2.4em; color: var(--ink); font-family: "Jost", "Futura", sans-serif; font-size: 17px; line-height: 1.8; -webkit-font-smoothing: antialiased; }
+.poema p { margin: 0; }
+.poema .recorte { width: min(100%, 520px); }
+/* nombre del proyecto en el índice: mismo cuerpo que el resto, en negrita (se engrosa un píxel para que la pixelada quede nítida) */
+.lista a.fila .t { font-size: 19px; line-height: 1.1; text-shadow: 1px 0 0 currentColor; }
+/* índice: todo en la pixelada; lo que no es el nombre, un par de cuerpos menos */
+.lista, .lista .fila, .lista .seccion {
+  font-family: "Jacquarda Bastarda 9", "Jost", serif;
+  -webkit-font-smoothing: none;
+  letter-spacing: 0;
+}
+.lista a.fila { font-size: 19px; align-items: baseline; }
+.lista .num { font-size: 17px; }
+.lista .fila.titulos, .lista .seccion { font-size: 17px; letter-spacing: 0.04em; font-weight: 400; }
+
+/* info: todo en la pixelada, como el índice; el nombre en negrita */
+.info .bio, .info .bio p, .info .bio a {
+  font-family: "Jacquarda Bastarda 9", "Jost", serif;
+  -webkit-font-smoothing: none;
+  letter-spacing: 0;
+}
+.info .bio .grande { font-size: 19px; line-height: 1.6; }
+.info .bio .grande .nombre-info { text-shadow: 1px 0 0 currentColor; }
+.info .bio .contacto { font-size: 19px; line-height: 1.6; gap: 2px; }
+.info .bio .contacto a { color: var(--mute); }
+.info .bio .contacto a:hover { color: var(--accent); }
+
+/* toda la página en la pixelada: tamaños parejos, sin suavizado */
+html, body { -webkit-font-smoothing: none; }
+.ficha .datos, .texto-obra .datos { font-size: 19px; line-height: 1.5; }
+.vecinos, .posicion span { font-size: 17px; }
+.leyenda-grilla, .panel .etiqueta { font-size: 17px; }
+
+/* ---------- mesa de trabajo (montaje) ---------- */
+body.montaje { height: 100vh; height: 100svh; display: flex; flex-direction: column; overflow: hidden; }
+.herramientas { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 22px; padding: 0 var(--pad) 18px; }
+.herramientas .zoom { display: inline-flex; align-items: baseline; gap: 10px; }
+.herramientas .zoom button { text-decoration: none; min-width: 24px; }
+.herramientas #zoom-valor { font-size: 17px; color: var(--mute); }
+.herramientas button {
+  font: inherit; font-size: 19px; color: var(--ink); background: none; border: 0; padding: 4px 0;
+  cursor: pointer; text-decoration: underline; text-underline-offset: 4px; -webkit-font-smoothing: none;
+}
+.herramientas button:hover { color: var(--accent); }
+.herramientas .aviso { font-size: 17px; color: var(--mute); }
+/* la cartela de la serie colgada, abajo a la izquierda, como en una sala */
+.cartela { position: absolute; left: 0; bottom: 4px; z-index: 2; font-size: 17px; color: var(--mute); text-decoration: none; cursor: pointer; }
+.cartela[hidden] { display: none; }
+.cartela b { font-weight: 400; color: var(--ink); text-shadow: 1px 0 0 currentColor; }
+.cartela:hover b { color: var(--accent); }
+/* la mesa: con mucho blanco alrededor */
+.mesa { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; touch-action: none; margin: 0 calc(var(--pad) * 2.5); cursor: grab; }
+.mesa.moviendo { cursor: grabbing; }
+.lienzo { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; }
+.mesa .vacia { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; margin: 0; color: var(--mute); font-size: 19px; pointer-events: none; }
+.pieza-mesa { position: absolute; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.pieza-mesa:active { cursor: grabbing; }
+.pieza-mesa .recorte, .pieza-mesa img.entera { width: 100%; display: block; }
+.pieza-mesa img { -webkit-user-drag: none; pointer-events: none; }
+/* como copias sobre la pared: opacas, con una sombra mínima */
+.pieza-mesa .recorte, .pieza-mesa img.entera { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10), 0 3px 10px rgba(0, 0, 0, 0.05); background: #FFFFFF; }
+/* imágenes grupales en la mesa: sin papel ni sombra; el blanco de fondo se vuelve transparente
+   (las de www ya traen el fondo transparente, por eso no necesitan el filtro) */
+.pieza-mesa.grupal .recorte, .pieza-mesa.grupal img.entera { box-shadow: none; background: none; }
+.pieza-mesa.sin-blanco img { filter: url(#sin-blanco); }
+.guia { position: absolute; left: -100000px; right: -100000px; height: 0; border-top: 1px solid var(--accent); pointer-events: none; z-index: 100000; }
+.pieza-mesa.elegida { outline: 1px solid var(--accent); outline-offset: 2px; }
+.pieza-mesa .asa { position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px; background: var(--accent); cursor: nwse-resize; opacity: 0; }
+.pieza-mesa .quitar {
+  position: absolute; top: -12px; right: -12px; width: 24px; height: 24px; border: 0; border-radius: 50%;
+  background: var(--ink); color: #FFFFFF; font: 16px/24px "Jost", sans-serif; padding: 0; cursor: pointer; opacity: 0;
+}
+.pieza-mesa.elegida .asa, .pieza-mesa.elegida .quitar, .pieza-mesa:hover .asa, .pieza-mesa:hover .quitar { opacity: 1; }
+.pie-mesa { flex: 0 0 auto; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 22px; padding: 18px var(--pad) 0; }
+.indicacion { margin: 0; font-size: 17px; color: var(--mute); }
+.subir {
+  font: inherit; font-size: 19px; color: var(--ink); background: none; border: 0; padding: 0;
+  cursor: pointer; text-decoration: underline; text-underline-offset: 4px; -webkit-font-smoothing: none;
+}
+.subir:hover { color: var(--accent); }
+.mesa.recibiendo { outline: 1px dashed var(--accent); outline-offset: 6px; }
+/* en el celular la mesa usa casi todo el ancho */
+@media (max-width: 600px) { .mesa { margin: 0 var(--pad); } }
+.bandeja { flex: 0 0 auto; display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; padding: 10px var(--pad) 22px; height: 112px; box-sizing: border-box; scrollbar-width: thin; }
+.miniatura { flex: none; height: 80px; padding: 0; border: 0; background: none; cursor: grab; touch-action: pan-x; }
+.miniatura .recorte { height: 80px; width: calc(80px * var(--ar)); }
+.miniatura img.entera { height: 80px; width: auto; display: block; }
+.miniatura img { pointer-events: none; -webkit-user-drag: none; }
+.miniatura:hover { outline: 1px solid var(--accent); }
+/* las fotos sueltas de una imagen compuesta: más chicas */
+.miniatura.parte { height: 56px; align-self: flex-end; }
+.miniatura.parte .recorte { height: 56px; width: calc(56px * var(--ar)); }
+.fantasma { position: fixed; z-index: 50; width: 180px; transform: translate(-50%, -50%); pointer-events: none; opacity: 0.85; }
+.fantasma .recorte, .fantasma img.entera { width: 100%; display: block; }
+/* en pantallas táctiles el asa es más grande, y aparece solo en la imagen elegida */
+@media (hover: none) { .pieza-mesa .asa { width: 22px; height: 22px; right: -11px; bottom: -11px; } .pieza-mesa:hover:not(.elegida) .asa, .pieza-mesa:hover:not(.elegida) .quitar { opacity: 0; } }
+

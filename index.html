@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matías Romero</title>
+<meta name="description" content="Matías Romero, artista visual. Buenos Aires. Obras hechas con imágenes encontradas: tours virtuales, Google Maps, videojuegos, carteles.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Matías Romero">
+<meta property="og:title" content="Matías Romero">
+<meta property="og:description" content="Matías Romero, artista visual. Buenos Aires. Obras hechas con imágenes encontradas: tours virtuales, Google Maps, videojuegos, carteles.">
+<!-- vista previa al compartir: cuando el sitio tenga dominio, poné la dirección completa, por ejemplo https://matiasromero.com/img/og.jpg -->
+<meta property="og:image" content="img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Jacquarda+Bastarda+9&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css?v=34">
+</head>
+<body class="profundidad">
+<header class="cabecera flotante">
+  <a class="nombre" href="index.html">Matías Romero</a>
+  <nav>
+    <a href="indice.html">series</a>
+    <a href="montaje.html">mesa de trabajo</a>
+    <a href="textos.html">textos</a>
+    <a href="info.html">info</a>
+  </nav>
+</header>
+
+<!-- filtro: vuelve transparentes los blancos y grises muy claros de las imágenes -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="sin-blanco" color-interpolation-filters="sRGB">
+    <feColorMatrix in="SourceGraphic" type="matrix" result="claro"
+      values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  -10 -10 -10 0 28.5"/>
+    <feComposite in="claro" in2="SourceGraphic" operator="in"/>
+  </filter>
+</svg>
+
+<main class="escena3d esfera" id="escena" aria-label="Todas las imágenes del archivo, alrededor, en 360 grados">
+  <div class="mundo" id="mundo"></div>
+</main>
+
+<footer class="pie3d">
+  <span class="leyenda3d" id="leyenda" aria-live="polite"></span>
+</footer>
+
+<script src="data.js?v=19"></script>
+<script src="recortes.js?v=4"></script>
+<script src="sitio.js?v=16"></script>
+<script>
+(function () {
+  var S = window.Sitio;
+  var escena = document.getElementById('escena');
+  var mundo = document.getElementById('mundo');
+  var leyenda = document.getElementById('leyenda');
+  var quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var RAD = Math.PI / 180;
+
+  /* ---- ajustes ---- */
+  var P = 700;            /* distancia del ojo (perspectiva) */
+  var RMIN = 480;         /* más cerca que esto, la imagen ya pasó */
+  var RMAX = 3400;        /* hasta dónde se ve: el fondo de la esfera */
+  var ESPACIO = 56;       /* cuánto recorrido le toca a cada imagen: más grande = menos imágenes juntas y viaje más largo */
+  var DESVANECE = 420;    /* tramo en el que se desvanecen al pasar */
+  var NIEBLA = 1000;      /* tramo en el que aparecen desde el fondo */
+  var ALTURA = 58;        /* hasta cuántos grados arriba y abajo hay imágenes */
+  var DE_FRENTE = true;  /* true = las imágenes siempre miran hacia vos, sin inclinarse */
+  var DERIVA = 0.7;       /* la página avanza sola, siempre, de a poco */
+
+  /* ---- todas las imágenes del archivo, mezcladas y repartidas alrededor ---- */
+  var piezas = [];
+  S.P.forEach(function (p) {
+    p.imagenes.forEach(function (src) { piezas.push({ p: p, src: src }); });
+    p.videos.forEach(function (v) { piezas.push({ p: p, video: v }); });
+  });
+  S.mezclar(piezas);
+
+  var W = window.innerWidth, H = window.innerHeight;
+  var anchoBase = Math.max(150, Math.min(240, W * 0.16));
+  var sinMax = Math.sin(ALTURA * RAD);
+
+  piezas.forEach(function (it, i) {
+    var el = document.createElement('a');
+    el.className = 'pieza';
+    el.href = S.enlace(it.p);
+    el.setAttribute('aria-label', it.p.titulo);
+    el.draggable = false;
+    var hijo;
+    if (it.src) {
+      hijo = S.imagen(it.src, it.p.titulo, false, true, null, 'c');
+      it.img = hijo.tagName === 'IMG' ? hijo : hijo.querySelector('img');
+      var ar = hijo.style.getPropertyValue('--ar');
+      it.ar = ar ? parseFloat(ar) : 1.4;
+    } else {
+      hijo = document.createElement('img');
+      hijo.className = 'entera';
+      hijo.alt = it.p.titulo;
+      it.img = hijo;
+      it.ar = 16 / 9;
+    }
+    it.img.draggable = false;
+    el.appendChild(hijo);
+    var ancho = anchoBase * (0.75 + Math.random() * 0.5) * Math.min(1.5, Math.max(0.75, Math.sqrt(it.ar)));
+    el.style.width = Math.round(ancho) + 'px';
+
+    /* lugar en la esfera: ángulo de oro alrededor, altura repartida, distancia al azar */
+    it.th = (i * 137.508 + Math.random() * 20) % 360;
+    it.ph = Math.asin((Math.random() * 2 - 1) * sinMax) / RAD;
+    it.r = (i + Math.random()) * ESPACIO;   /* repartidas a lo largo de todo el viaje */
+    it.el = el;
+    it.visible = false;
+    it.cargada = false;
+    el.style.visibility = 'hidden';
+
+    el.addEventListener('mouseenter', function () {
+      leyenda.textContent = it.p.titulo + (it.p.donde ? ' — ' + it.p.donde : '');
+    });
+    el.addEventListener('mouseleave', function () { leyenda.textContent = ''; });
+    el.addEventListener('click', function (e) { if (arrastro) e.preventDefault(); });
+    mundo.appendChild(el);
+  });
+
+  function cargar(it) {
+    it.cargada = true;
+    if (it.src) { it.img.src = it.img.dataset.src; return; }
+    S.vimeoMiniatura(it.video).then(function (u) { if (u) it.img.src = u; });
+  }
+
+  /* ---- cámara ---- */
+  var yaw = 0, pitch = 0, yawObj = 0, pitchObj = 0;
+  var avance = 0, avanceObj = 0;
+  var ultimoToque = -99999;
+  var LARGO = Math.max(piezas.length * ESPACIO, RMAX + 400);   /* el viaje completo; al final vuelve a empezar */
+
+  function cuadro(t) {
+    if (!quieto) avanceObj += DERIVA;   /* avanza sola, aunque no toques nada (salvo con "reducir movimiento" activado) */
+    yaw += (yawObj - yaw) * 0.09;
+    pitch += (pitchObj - pitch) * 0.09;
+    avance += (avanceObj - avance) * 0.075;
+    mundo.style.transform = 'translateZ(' + P + 'px) rotateX(' + pitch.toFixed(3) + 'deg) rotateY(' + yaw.toFixed(3) + 'deg)';
+
+    var sp = Math.sin(pitch * RAD), cp = Math.cos(pitch * RAD);
+    for (var i = 0; i < piezas.length; i++) {
+      var it = piezas[i];
+      /* ¿está adelante de la mirada? */
+      var a = (it.th + yaw) * RAD, f = it.ph * RAD;
+      var y1 = Math.sin(f), z1 = -Math.cos(f) * Math.cos(a);
+      var frente = -(y1 * sp + z1 * cp);
+      /* distancia: las imágenes vienen del fondo hacia vos y vuelven al fondo */
+      var r = ((it.r - avance) % LARGO + LARGO) % LARGO;
+      if (frente < 0.22 || r < RMIN || r > RMAX) {
+        if (it.visible) { it.el.style.visibility = 'hidden'; it.visible = false; }
+        continue;
+      }
+      if (!it.cargada && frente > 0.5) cargar(it);   /* solo baja las que estás mirando */
+      if (!it.visible) { it.el.style.visibility = 'visible'; it.visible = true; }
+      var op = Math.min(1, (r - RMIN) / DESVANECE) * Math.min(1, (RMAX - r) / NIEBLA);
+      it.el.style.opacity = op.toFixed(3);
+      it.el.style.pointerEvents = op > 0.5 ? 'auto' : 'none';
+      var pos = 'rotateY(' + it.th.toFixed(2) + 'deg) rotateX(' + it.ph.toFixed(2) + 'deg) translateZ(' + (-r).toFixed(1) + 'px)';
+      /* de frente: se deshace el giro de la imagen y el de la mirada, así siempre queda mirándote */
+      var giro = DE_FRENTE ? ' rotateX(' + (-it.ph).toFixed(2) + 'deg) rotateY(' + (-it.th - yaw).toFixed(2) + 'deg) rotateX(' + (-pitch).toFixed(3) + 'deg)' : '';
+      it.el.style.transform = pos + giro + ' translate(-50%,-50%)';
+    }
+    requestAnimationFrame(cuadro);
+  }
+
+  /* ---- arrastrar para mirar ---- */
+  var abajo = false, arrastro = false, px = 0, py = 0, recorrido = 0;
+  escena.addEventListener('pointerdown', function (e) {
+    abajo = true; arrastro = false; recorrido = 0;
+    px = e.clientX; py = e.clientY;
+    ultimoToque = performance.now();
+  });
+  window.addEventListener('pointermove', function (e) {
+    if (!abajo) return;
+    var dx = e.clientX - px, dy = e.clientY - py;
+    px = e.clientX; py = e.clientY;
+    recorrido += Math.abs(dx) + Math.abs(dy);
+    if (recorrido > 6) { arrastro = true; escena.classList.add('arrastrando'); }
+    yawObj += dx * 0.14;
+    pitchObj = Math.max(-70, Math.min(70, pitchObj - dy * 0.14));
+    ultimoToque = performance.now();
+  });
+  window.addEventListener('pointerup', function () {
+    abajo = false;
+    escena.classList.remove('arrastrando');
+    setTimeout(function () { arrastro = false; }, 0);
+  });
+
+  /* ---- rueda: las imágenes se acercan (o se alejan) ---- */
+  escena.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    var k = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? H : 1;
+    avanceObj += e.deltaY * k * 1.3;
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) yawObj -= e.deltaX * k * 0.08;
+    ultimoToque = performance.now();
+  }, { passive: false });
+
+  /* ---- teclado ---- */
+  document.addEventListener('keydown', function (e) {
+    var hecho = true;
+    if (e.key === 'ArrowLeft') yawObj += 12;
+    else if (e.key === 'ArrowRight') yawObj -= 12;
+    else if (e.key === 'ArrowUp') avanceObj += 300;
+    else if (e.key === 'ArrowDown') avanceObj -= 300;
+    else hecho = false;
+    if (hecho) { e.preventDefault(); ultimoToque = performance.now(); }
+  });
+
+  window.addEventListener('resize', function () { W = window.innerWidth; H = window.innerHeight; });
+
+  requestAnimationFrame(cuadro);
+})();
+</script>
+</body>
+</html>

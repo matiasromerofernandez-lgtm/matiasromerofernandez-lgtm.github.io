@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Info — Matías Romero</title>
+<meta name="description" content="Matías Romero, artista visual. Buenos Aires. Obras hechas con imágenes encontradas: tours virtuales, Google Maps, videojuegos, carteles.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Matías Romero">
+<meta property="og:title" content="Info — Matías Romero">
+<meta property="og:description" content="Matías Romero, artista visual. Buenos Aires. Obras hechas con imágenes encontradas: tours virtuales, Google Maps, videojuegos, carteles.">
+<!-- vista previa al compartir: cuando el sitio tenga dominio, poné la dirección completa, por ejemplo https://matiasromero.com/img/og.jpg -->
+<meta property="og:image" content="img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Jacquarda+Bastarda+9&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css?v=34">
+</head>
+<body>
+<header class="cabecera">
+  <a class="nombre" href="index.html">Matías Romero</a>
+  <nav>
+    <a href="indice.html">series</a>
+    <a href="montaje.html">mesa de trabajo</a>
+    <a href="textos.html">textos</a>
+    <a href="info.html" aria-current="page">info</a>
+  </nav>
+</header>
+
+<main class="info">
+  <div class="bio">
+    <p class="grande"><span class="nombre-info">Matías Romero</span><br>Buenos Aires, 1988. Vive y trabaja en Buenos Aires.</p>
+    <div class="contacto">
+      <a id="correo" data-u="matiasromerofernandez" data-d="gmail.com">correo</a>
+      <a href="https://www.instagram.com/camara_selfie/" target="_blank" rel="noopener">@camara_selfie</a>
+    </div>
+  </div>
+</main>
+<script>
+/* el mail se arma acá, para que los programas que juntan direcciones de las páginas no lo encuentren */
+(function () {
+  var a = document.getElementById('correo'), m = a.dataset.u + '@' + a.dataset.d;
+  a.href = 'mailto:' + m;
+  a.textContent = m;
+})();
+</script>
+</body>
+</html>

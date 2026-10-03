@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mesa de trabajo — Matías Romero</title>
+<meta name="description" content="Matías Romero, artista visual. Buenos Aires. Obras hechas con imágenes encontradas: tours virtuales, Google Maps, videojuegos, carteles.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Matías Romero">
+<meta property="og:title" content="Mesa de trabajo — Matías Romero">
+<meta property="og:description" content="Matías Romero, artista visual. Buenos Aires. Obras hechas con imágenes encontradas: tours virtuales, Google Maps, videojuegos, carteles.">
+<!-- vista previa al compartir: cuando el sitio tenga dominio, poné la dirección completa, por ejemplo https://matiasromero.com/img/og.jpg -->
+<meta property="og:image" content="img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Jacquarda+Bastarda+9&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css?v=34">
+</head>
+<body class="montaje">
+<header class="cabecera">
+  <a class="nombre" href="index.html">Matías Romero</a>
+  <nav>
+    <a href="indice.html">series</a>
+    <a href="montaje.html" aria-current="page">mesa de trabajo</a>
+    <a href="textos.html">textos</a>
+    <a href="info.html">info</a>
+  </nav>
+</header>
+
+<!-- filtro: vuelve transparentes los blancos y grises muy claros -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="sin-blanco" color-interpolation-filters="sRGB">
+    <feColorMatrix in="SourceGraphic" type="matrix" result="claro"
+      values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  -10 -10 -10 0 28.5"/>
+    <feComposite in="claro" in2="SourceGraphic" operator="in"/>
+  </filter>
+</svg>
+
+<div class="herramientas">
+  <button type="button" id="azar">colgar al azar</button>
+  <button type="button" id="series">x series</button>
+  <button type="button" id="vaciar">vaciar</button>
+  <button type="button" id="compartir">compartir</button>
+  <span class="zoom" role="group" aria-label="Zoom">
+    <button type="button" id="alejar" aria-label="Alejar">−</button>
+    <button type="button" id="zoom-valor" aria-label="Volver al tamaño original">100%</button>
+    <button type="button" id="acercar" aria-label="Acercar">+</button>
+  </span>
+  <span class="aviso" id="aviso" aria-live="polite"></span>
+</div>
+
+<main class="mesa" id="mesa" aria-label="Mesa de trabajo: armá tu montaje">
+  <div class="lienzo" id="lienzo"></div>
+  <a class="cartela" id="cartela" hidden></a>
+</main>
+
+<div class="pie-mesa">
+  <button type="button" class="subir" id="subir" title="La imagen queda solo en tu navegador: no se sube a ningún lado">subir una imagen</button>
+  <p class="indicacion">tocá o arrastrá una imagen a la mesa</p>
+  <input type="file" id="propia" accept="image/*" multiple hidden>
+</div>
+<div class="bandeja" id="bandeja" aria-label="Todas las imágenes del archivo"></div>
+
+<script src="data.js?v=19"></script>
+<script src="recortes.js?v=4"></script>
+<script src="piezas.js?v=5"></script>
+<script src="sitio.js?v=16"></script>
+<script>
+(function () {
+  var S = window.Sitio;
+  var mesa = document.getElementById('mesa');
+  var lienzo = document.getElementById('lienzo');
+  var bandeja = document.getElementById('bandeja');
+  var aviso = document.getElementById('aviso');
+  var vacia = { hidden: true };   /* la indicación ahora vive arriba de la bandeja */
+  var zoomValor = document.getElementById('zoom-valor');
+
+  /* todas las imágenes del archivo (las de los proyectos visibles).
+     Las que están hechas de varias fotos van enteras y, además, cada foto por separado.
+     Las partes se agregan al final, pero en la bandeja aparecen al lado de su imagen.
+     Cada imagen tiene un código fijo, sacado de su nombre de archivo: es lo que viaja en el
+     enlace de "compartir", así un montaje compartido sigue igual aunque se agreguen,
+     saquen o reordenen imágenes en data.js. */
+  var PZ = window.PIEZAS || {}, SM = window.SIN_MARCO || {};
+  var archivo = [], orden = [], partes = [], partesDe = {};
+  function codigoDe(texto) {   /* FNV-1a: un número corto y siempre igual para el mismo nombre */
+    var h = 0x811c9dc5;
+    for (var k = 0; k < texto.length; k++) { h ^= texto.charCodeAt(k); h = Math.imul(h, 0x01000193) >>> 0; }
+    return h.toString(36);
+  }
+  S.P.forEach(function (p) {
+    p.imagenes.forEach(function (src) {
+      var i = archivo.length, clave = src.replace('https://payload.cargocollective.com', ''), cod = codigoDe(clave);
+      /* las fotos con marco (fabiolo) van sin el marco.
+         Las grupales (varias fotos en una imagen) van sin el blanco de fondo: transparente.
+         Los dípticos de brillo sobre brillo no tienen blanco, así que quedan como están. */
+      var grupal = !!PZ[clave] && !/\/cerouno([4-9]|1[0-9])_/.test(clave);
+      archivo.push({ src: src, p: p, recorte: SM[clave], codigo: cod, grupal: grupal, local: src.indexOf('img/') === 0 });
+      orden.push(i);
+      var d = PZ[clave];
+      if (d) d[2].forEach(function (b, k) {
+        partes.push({ despuesDe: i, it: { src: src, p: p, parte: true, codigo: cod + '-' + k, recorte: [d[0], d[1], b[0], b[1], b[2], b[3]] } });
+      });
+    });
+  });
+  partes.forEach(function (x) {
+    var j = archivo.length;
+    archivo.push(x.it);
+    (partesDe[x.despuesDe] = partesDe[x.despuesDe] || []).push(j);
+    var k = orden.lastIndexOf(x.despuesDe);
+    while (k + 1 < orden.length && archivo[orden[k + 1]].parte) k++;   /* después de las partes anteriores */
+    orden.splice(k + 1, 0, j);
+  });
+  var porCodigo = {};
+  archivo.forEach(function (it, i) { porCodigo[it.codigo] = i; });
+
+  function proporcion(it) {
+    if (it.ar) return it.ar;
+    var c = it.recorte || S.R[it.src.replace('https://payload.cargocollective.com', '')];
+    return c ? (c[4] - c[2]) / (c[5] - c[3]) : null;
+  }
+
+  /* ---- la vista: zoom y desplazamiento de toda la mesa ---- */
+  var vista = { z: 1, x: 0, y: 0 };
+  function aplicarVista() {
+    lienzo.style.transform = 'translate(' + vista.x + 'px,' + vista.y + 'px) scale(' + vista.z + ')';
+    zoomValor.textContent = Math.round(vista.z * 100) + '%';
+  }
+  function zoom(f, cx, cy) {
+    if (cx === undefined) { cx = mesa.clientWidth / 2; cy = mesa.clientHeight / 2; }
+    var lx = (cx - vista.x) / vista.z, ly = (cy - vista.y) / vista.z;
+    vista.z = Math.max(0.25, Math.min(4, vista.z * f));
+    vista.x = cx - lx * vista.z;
+    vista.y = cy - ly * vista.z;
+    aplicarVista();
+  }
+  /* de la pantalla a la mesa */
+  function aLocal(clientX, clientY) {
+    var r = mesa.getBoundingClientRect();
+    return { x: (clientX - r.left - vista.x) / vista.z, y: (clientY - r.top - vista.y) / vista.z };
+  }
+  /* lo que se ve ahora, en coordenadas de la mesa (proporción del ancho) */
+  function visible() {
+    var w = W();
+    return {
+      x0: (-vista.x / vista.z) / w, y0: (-vista.y / vista.z) / w,
+      ancho: (mesa.clientWidth / vista.z) / w, alto: (mesa.clientHeight / vista.z) / w
+    };
+  }
+
+  /* ---- la bandeja ---- */
+  function miniatura(i, alPrincipio) {
+    var it = archivo[i];
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = it.parte ? 'miniatura parte' : it.propia ? 'miniatura propia' : 'miniatura';
+    b.setAttribute('aria-label', it.propia ? 'Agregar tu imagen' : (it.parte ? 'Agregar una foto suelta de ' : 'Agregar imagen de ') + it.p.titulo);
+    b.appendChild(S.imagen(it.src, '', true, false, it.recorte, 'c'));
+    b.addEventListener('pointerdown', function (e) { empezarDesdeBandeja(e, i); });
+    if (alPrincipio) bandeja.insertBefore(b, bandeja.firstChild); else bandeja.appendChild(b);
+  }
+  /* la bandeja va alternada: las series se reparten a lo largo de toda la tira,
+     así nunca quedan dos seguidas de la misma serie y cambia cada vez que se abre la página */
+  function alternadas(lista) {
+    var grupos = {};
+    lista.forEach(function (i) { var s = archivo[i].p.slug; (grupos[s] = grupos[s] || []).push(i); });
+    var todos = [];
+    Object.keys(grupos).forEach(function (s) {
+      var g = grupos[s];
+      for (var k = g.length - 1; k > 0; k--) { var j = Math.floor(Math.random() * (k + 1)), t = g[k]; g[k] = g[j]; g[j] = t; }
+      g.forEach(function (i, k) { todos.push({ i: i, pos: (k + 0.15 + Math.random() * 0.7) / g.length }); });
+    });
+    todos.sort(function (a, b) { return a.pos - b.pos; });
+    var r = todos.map(function (x) { return x.i; });
+    /* si igual quedaron dos de la misma serie juntas, se cambia la segunda por la próxima distinta */
+    for (var k = 1; k < r.length; k++) {
+      if (archivo[r[k]].p !== archivo[r[k - 1]].p) continue;
+      for (var j = k + 1; j < r.length; j++) {
+        if (archivo[r[j]].p !== archivo[r[k - 1]].p && (k + 1 >= r.length || archivo[r[j]].p !== archivo[r[k + 1]].p || j === k + 1)) {
+          var t = r[k]; r[k] = r[j]; r[j] = t; break;
+        }
+      }
+    }
+    return r;
+  }
+  alternadas(orden).forEach(function (i) { miniatura(i); });
+
+  /* ---- piezas en la mesa ----
+     posición y tamaño en proporción del ancho de la mesa, así un montaje compartido
+     se ve igual en cualquier pantalla */
+  var piezas = [];
+  var capa = 1;
+  var elegida = null;
+
+  function W() { return mesa.clientWidth; }
+
+  function crear(i, x, y, w, z) {
+    var it = archivo[i];
+    if (!it) return null;
+    if (serieActual && it.p !== serieActual) mostrarSerie(null);
+    var el = document.createElement('div');
+    el.className = 'pieza-mesa' + (it.grupal ? ' grupal' + (it.local ? '' : ' sin-blanco') : '');
+    el.appendChild(S.imagen(it.src, it.p.titulo, false, false, it.recorte));
+    var asa = document.createElement('span');
+    asa.className = 'asa';
+    asa.setAttribute('aria-hidden', 'true');
+    el.appendChild(asa);
+    var quitar = document.createElement('button');
+    quitar.type = 'button';
+    quitar.className = 'quitar';
+    quitar.setAttribute('aria-label', 'Sacar de la mesa');
+    quitar.textContent = '×';
+    el.appendChild(quitar);
+    var pz = { i: i, x: x, y: y, w: w, z: z || capa++, el: el, ar: proporcion(it) || 1.4 };
+    capa = Math.max(capa, pz.z + 1);
+    piezas.push(pz);
+    lienzo.appendChild(el);
+    ubicar(pz);
+    el.addEventListener('pointerdown', function (e) {
+      if (e.target === quitar) return;
+      e.stopPropagation();
+      elegir(pz);
+      if (e.target === asa) agrandar(e, pz); else mover(e, pz);
+    });
+    el.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      elegir(pz);
+      var f = Math.exp(-e.deltaY * 0.0015);
+      var cx = pz.x + pz.w / 2, cy = pz.y + pz.w / pz.ar / 2;
+      pz.w = Math.max(0.03, Math.min(1.5, pz.w * f));
+      pz.x = cx - pz.w / 2; pz.y = cy - pz.w / pz.ar / 2;
+      ubicar(pz);
+    }, { passive: false });
+    quitar.addEventListener('click', function () { sacar(pz); });
+    vacia.hidden = true;
+    return pz;
+  }
+
+  function ubicar(pz) {
+    var w = W();
+    pz.el.style.left = (pz.x * w) + 'px';
+    pz.el.style.top = (pz.y * w) + 'px';
+    pz.el.style.width = (pz.w * w) + 'px';
+    pz.el.style.zIndex = pz.z;
+  }
+
+  function elegir(pz) {
+    if (elegida) elegida.el.classList.remove('elegida');
+    elegida = pz;
+    if (pz) { pz.z = capa++; pz.el.style.zIndex = pz.z; pz.el.classList.add('elegida'); }
+  }
+
+  function sacar(pz) {
+    pz.el.remove();
+    piezas.splice(piezas.indexOf(pz), 1);
+    if (elegida === pz) elegida = null;
+    vacia.hidden = piezas.length > 0;
+  }
+
+  function arrastre(e, el, alMover, alSoltar) {
+    e.preventDefault();
+    el.setPointerCapture(e.pointerId);
+    var sx = e.clientX, sy = e.clientY;
+    function m(ev) { alMover(ev.clientX - sx, ev.clientY - sy); }
+    function f() { el.removeEventListener('pointermove', m); el.removeEventListener('pointerup', f); el.removeEventListener('pointercancel', f); if (alSoltar) alSoltar(); }
+    el.addEventListener('pointermove', m);
+    el.addEventListener('pointerup', f);
+    el.addEventListener('pointercancel', f);
+  }
+
+  /* arrastrar para mover (con el zoom en cuenta) */
+  function mover(e, pz) {
+    var k = W() * vista.z, ox = pz.x, oy = pz.y;
+    arrastre(e, pz.el, function (dx, dy) {
+      pz.x = ox + dx / k; pz.y = oy + dy / k;
+      alinear(pz, 6 / k);
+      ubicar(pz);
+    }, function () { guia.hidden = true; });
+  }
+
+  /* imán: el borde de arriba, el centro o el de abajo se alinean con los de otra foto */
+  var guia = document.createElement('div');
+  guia.className = 'guia';
+  guia.hidden = true;
+  lienzo.appendChild(guia);
+  function alinear(pz, tol) {
+    var h = pz.w / pz.ar, mias = [pz.y, pz.y + h / 2, pz.y + h], mejor = null;
+    piezas.forEach(function (o) {
+      if (o === pz) return;
+      var oh = o.w / o.ar, suyas = [o.y, o.y + oh / 2, o.y + oh];
+      mias.forEach(function (m, a) {
+        suyas.forEach(function (sy) {
+          var d = Math.abs(m - sy);
+          if (d < tol && (!mejor || d < mejor.d)) mejor = { d: d, dy: sy - m, linea: sy };
+        });
+      });
+    });
+    if (mejor) {
+      pz.y += mejor.dy;
+      var w = W();
+      guia.style.top = (mejor.linea * w) + 'px';
+      guia.hidden = false;
+    } else guia.hidden = true;
+  }
+
+  /* arrastrar la esquina para cambiar el tamaño */
+  function agrandar(e, pz) {
+    var k = W() * vista.z, ow = pz.w;
+    arrastre(e, pz.el, function (dx) { pz.w = Math.max(0.03, Math.min(1.5, ow + dx / k)); ubicar(pz); });
+  }
+
+  /* arrastrar el fondo para moverse por la mesa; la rueda sobre el fondo hace zoom */
+  mesa.addEventListener('pointerdown', function (e) {
+    if (e.target !== mesa && e.target !== lienzo) return;
+    elegir(null);
+    var ox = vista.x, oy = vista.y;
+    mesa.classList.add('moviendo');
+    arrastre(e, mesa, function (dx, dy) { vista.x = ox + dx; vista.y = oy + dy; aplicarVista(); });
+    mesa.addEventListener('pointerup', function fin() { mesa.classList.remove('moviendo'); mesa.removeEventListener('pointerup', fin); });
+  });
+  mesa.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    var r = mesa.getBoundingClientRect();
+    zoom(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top);
+  }, { passive: false });
+
+  /* desde la bandeja: tocar = agregar; arrastrar = soltar donde quieras */
+  function empezarDesdeBandeja(e, i) {
+    var sx = e.clientX, sy = e.clientY, fantasma = null, recorrido = 0;
+    function m(ev) {
+      recorrido = Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy);
+      if (recorrido > 8 && !fantasma) {
+        fantasma = document.createElement('div');
+        fantasma.className = 'fantasma';
+        fantasma.appendChild(S.imagen(archivo[i].src, '', false, false, archivo[i].recorte, 'c'));
+        document.body.appendChild(fantasma);
+      }
+      if (fantasma) { fantasma.style.left = ev.clientX + 'px'; fantasma.style.top = ev.clientY + 'px'; }
+    }
+    function f(ev) {
+      window.removeEventListener('pointermove', m);
+      window.removeEventListener('pointerup', f);
+      var r = mesa.getBoundingClientRect(), w = W();
+      var ar = proporcion(archivo[i]) || 1.4;
+      var v = visible();
+      var ancho = angosta() ? Math.min(0.5, v.ancho * 0.5) : Math.min(0.16, v.ancho * 0.3);
+      if (fantasma) {
+        fantasma.remove();
+        if (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) {
+          var p = aLocal(ev.clientX, ev.clientY);
+          elegir(crear(i, p.x / w - ancho / 2, p.y / w - ancho / ar / 2, ancho));
+        }
+      } else if (recorrido < 8) {
+        elegir(crear(i, v.x0 + Math.random() * Math.max(0, v.ancho - ancho), v.y0 + Math.random() * Math.max(0, v.alto - ancho / ar), ancho));
+      }
+    }
+    window.addEventListener('pointermove', m);
+    window.addEventListener('pointerup', f);
+  }
+
+  /* ---- herramientas ---- */
+  function decir(t) { aviso.textContent = t; clearTimeout(decir.t); decir.t = setTimeout(function () { aviso.textContent = ''; }, 2500); }
+
+  document.getElementById('acercar').addEventListener('click', function () { zoom(1.25); });
+  document.getElementById('alejar').addEventListener('click', function () { zoom(0.8); });
+  zoomValor.addEventListener('click', function () { vista = { z: 1, x: 0, y: 0 }; aplicarVista(); });
+
+  /* colgar: una pared, no una pila.
+     Tamaños muy distintos (muchas chicas, algunas medianas, una o dos grandes),
+     una línea a la altura de los ojos, grupos de fotos chicas en grilla
+     y alguna suelta más arriba o más abajo. Casi nunca se tocan.
+     "pool" son las imágenes de donde se elige; ninguna se repite mientras alcancen. */
+  function azar(a, b) { return a + Math.random() * (b - a); }
+  function mezclados(a) {
+    a = a.slice();
+    for (var k = a.length - 1; k > 0; k--) { var j = Math.floor(Math.random() * (k + 1)), t = a[k]; a[k] = a[j]; a[j] = t; }
+    return a;
+  }
+  function angosta() { return W() < 600; }
+
+  /* en el celular: pocas imágenes y grandes, que entren todas en lo que se ve.
+     Una grande arriba (a la izquierda o a la derecha), al costado una o dos chicas
+     una sobre otra, y abajo una fila de una o dos más. */
+  function colgarCelu(pool) {
+    piezas.slice().forEach(sacar);
+    var v = visible(), A = v.alto / v.ancho;   /* alto de lo visible, con el ancho = 1 */
+    var mazo = mezclados(pool), pos = 0;
+    function otra(entera) {
+      if (pos >= mazo.length) { mazo = mezclados(pool); pos = 0; }
+      if (entera) for (var q = pos; q < mazo.length; q++) {
+        if (!archivo[mazo[q]].parte) { var t = mazo[pos]; mazo[pos] = mazo[q]; mazo[q] = t; break; }
+      }
+      var i = mazo[pos++];
+      return { i: i, ar: proporcion(archivo[i]) || 1.4 };
+    }
+    var m = 0.05, hechos = [], quedan = pool.length;
+    /* la grande */
+    var o = otra(true), g = azar(0.55, 0.72), h = g / o.ar;
+    if (h > A * 0.6) { h = A * 0.6; g = h * o.ar; }
+    var izq = Math.random() < 0.5, gx = izq ? m : 1 - m - g, gy = m + Math.random() * Math.max(0, A * 0.08);
+    hechos.push([o.i, gx, gy, g]); quedan--;
+    /* al costado: una o dos, una sobre otra */
+    var libre = 1 - g - 3 * m;
+    if (libre > 0.16 && quedan > 0) {
+      var n = quedan > 1 && Math.random() < 0.6 ? 2 : 1, yy = gy + (n === 1 ? Math.random() * h * 0.4 : 0);
+      for (var k = 0; k < n; k++) {
+        var c = otra(), w = Math.min(libre, azar(0.16, 0.26)), hh = w / c.ar;
+        if (hh > h / n) { hh = h / n - m / 2; w = hh * c.ar; }
+        hechos.push([c.i, izq ? gx + g + m : gx - m - w, yy, w]); quedan--;
+        yy += hh + m * 0.8;
+      }
+    }
+    /* abajo: una fila de una o dos, alineadas arriba */
+    var abajo = A - 0.1 - (gy + h) - 2 * m;   /* 0.1: lugar para la cartela */
+    if (abajo > 0.14 && quedan > 0) {
+      var n2 = quedan > 1 && Math.random() < 0.6 ? 2 : 1, x = izq ? m + azar(0, 0.15) : 1 - m - azar(0, 0.15), filas = [];
+      for (var k2 = 0; k2 < n2; k2++) {
+        var c2 = otra(), w2 = azar(0.22, 0.4), h2 = w2 / c2.ar;
+        if (h2 > abajo) { h2 = abajo; w2 = h2 * c2.ar; }
+        filas.push([c2, w2]);
+      }
+      var ancho = filas.reduce(function (s, f) { return s + f[1]; }, 0) + m * (filas.length - 1);
+      if (ancho > 1 - 2 * m) { var kk = (1 - 2 * m) / ancho; filas.forEach(function (f) { f[1] *= kk; }); ancho = 1 - 2 * m; }
+      var px = izq ? Math.min(x, 1 - m - ancho) : Math.max(m, x - ancho);
+      filas.forEach(function (f) { hechos.push([f[0].i, px, gy + h + m * 1.6, f[1]]); px += f[1] + m; });
+    }
+    hechos.forEach(function (hh) { crear(hh[0], v.x0 + hh[1] * v.ancho, v.y0 + hh[2] * v.ancho, hh[3] * v.ancho); });
+    elegir(null);
+  }
+
+  function colgar(pool) {
+    if (angosta()) return colgarCelu(pool);
+    piezas.slice().forEach(sacar);
+    var v = visible();
+    var ojos = v.y0 + v.alto * azar(0.42, 0.5);      /* la línea de los ojos */
+    var mazo = mezclados(pool), pos = 0;
+    /* entera: si se puede, que no sea una foto suelta de un conjunto (para las grandes) */
+    function otra(entera) {
+      if (pos >= mazo.length) { mazo = mezclados(pool); pos = 0; }
+      if (entera) for (var q = pos; q < mazo.length; q++) {
+        if (!archivo[mazo[q]].parte) { var t = mazo[pos]; mazo[pos] = mazo[q]; mazo[q] = t; break; }
+      }
+      var i = mazo[pos++];
+      return { i: i, ar: proporcion(archivo[i]) || 1.4, parte: !!archivo[i].parte };
+    }
+    /* cuántas cosas cuelgan: entre 5 y 8; si la serie es corta, todas sus imágenes */
+    var quedan = pool.length, cuenta = quedan <= 8 ? quedan : Math.round(azar(5, 8));
+    var plan = [];
+    for (var k = 0; k < cuenta && quedan > 0; k++) {
+      var t = Math.random(), e;
+      if (t < 0.16 && quedan >= 4) e = { tipo: 'grupo', n: quedan >= 6 && Math.random() < 0.5 ? 6 : 4 };
+      else if (t < 0.26) e = { tipo: 'grande' };
+      else if (t < 0.38 && quedan >= 2) e = { tipo: 'pila' };   /* una mediana con una chica arriba o abajo */
+      else if (t < 0.62) e = { tipo: 'mediana' };
+      else e = { tipo: 'chica' };
+      plan.push(e);
+      quedan -= e.tipo === 'grupo' ? e.n : e.tipo === 'pila' ? 2 : 1;
+    }
+    if (!plan.some(function (p) { return p.tipo === 'grande'; })) {
+      var sueltas = plan.filter(function (p) { return p.tipo !== 'grupo'; });
+      if (sueltas.length) sueltas[Math.floor(Math.random() * sueltas.length)].tipo = 'grande';
+    }
+    var x = v.x0 + v.ancho * 0.04, hechos = [];
+    plan.forEach(function (p) {
+      if (p.tipo === 'grupo') {
+        var cols = p.n === 4 ? 2 : 3, filas = p.n / cols, celda = v.ancho * azar(0.03, 0.045), sep = celda * 0.12;
+        var items = [];
+        for (var c = 0; c < p.n; c++) items.push(otra());
+        var altoCelda = celda / 1.3;
+        var arriba = ojos - (filas * altoCelda + (filas - 1) * sep) / 2;
+        items.forEach(function (it, k) {
+          var col = k % cols, fila = Math.floor(k / cols);
+          var w = Math.min(celda, altoCelda * it.ar);
+          hechos.push([it.i, x + col * (celda + sep) + (celda - w) / 2, arriba + fila * (altoCelda + sep), w]);
+        });
+        x += cols * celda + (cols - 1) * sep;
+      } else {
+        var o = otra(p.tipo === 'grande' || p.tipo === 'pila'), i = o.i, ar = o.ar;
+        var w = p.tipo === 'grande' ? v.ancho * azar(0.26, 0.4) : (p.tipo === 'mediana' || p.tipo === 'pila') ? v.ancho * azar(0.09, 0.15) : v.ancho * azar(0.028, 0.05);
+        /* las fotos sueltas de un conjunto van, en general, más chicas */
+        if (o.parte) w *= p.tipo === 'grande' ? azar(0.3, 0.45) : azar(0.5, 0.75);
+        var h = w / ar;
+        if (h > v.alto * 0.78) { h = v.alto * 0.78; w = h * ar; }
+        var y;
+        var modo = Math.random();
+        if (p.tipo === 'chica' && modo < 0.3) y = ojos - v.alto * azar(0.2, 0.34);         /* suelta, más arriba */
+        else if (p.tipo === 'chica' && modo < 0.45) y = ojos + v.alto * azar(0.12, 0.24);  /* suelta, más abajo */
+        else if (modo < 0.6) y = ojos - h / 2;                                             /* centrada en los ojos */
+        else if (modo < 0.85) y = ojos - v.alto * 0.22;                                    /* borde de arriba en una línea alta */
+        else y = ojos + v.alto * 0.2 - h;                                                  /* borde de abajo en una línea baja */
+        hechos.push([i, x, y, w]);
+        if (p.tipo === 'pila') {   /* una chica, pegada arriba o abajo, alineada a la izquierda */
+          var o2 = otra();
+          var w2 = w * azar(0.3, 0.45), h2 = w2 / o2.ar, sep2 = v.alto * 0.03;
+          hechos.push([o2.i, x, Math.random() < 0.5 ? y - sep2 - h2 : y + h + sep2, w2]);
+        }
+        x += w;
+      }
+      x += v.ancho * azar(0.03, 0.075);   /* aire entre una y otra */
+    });
+    /* si la pared quedó más larga que lo que se ve, se achica todo para que entre */
+    var largo = x - v.x0, k = Math.min(1, (v.ancho * 0.96) / largo);
+    hechos.forEach(function (hh) {
+      var nx = v.x0 + (hh[1] - v.x0) * k, ny = ojos + (hh[2] - ojos) * k;
+      crear(hh[0], nx, ny, hh[3] * k);
+    });
+    elegir(null);
+  }
+
+  /* al azar: de todo el archivo */
+  var todas = archivo.map(function (it, i) { return i; });
+  document.getElementById('azar').addEventListener('click', function () {
+    mostrarSerie(null);
+    colgar(todas);
+  });
+
+  /* x series: cada vez, una sola serie (un proyecto) colgada entera o en parte.
+     Las imágenes compuestas a veces van enteras y a veces en sus fotos sueltas. */
+  function poolDe(p) {
+    var res = [];
+    archivo.forEach(function (it, i) {
+      if (it.p !== p || it.parte) return;
+      var ps = partesDe[i];
+      if (ps && Math.random() < 0.6) res.push.apply(res, ps); else res.push(i);
+    });
+    return res;
+  }
+  var conSerie = S.P.filter(function (p) {
+    var n = 0;
+    archivo.forEach(function (it, i) { if (it.p === p && !it.parte) n += partesDe[i] ? 2 : 1; });
+    return n >= 2;
+  });
+  var cola = [], ultima = null;
+  function siguienteSerie() {
+    if (!cola.length) {
+      cola = mezclados(conSerie);
+      if (cola.length > 1 && cola[0] === ultima) cola.push(cola.shift());
+    }
+    ultima = cola.shift();
+    return ultima;
+  }
+  document.getElementById('series').addEventListener('click', function () {
+    var p = siguienteSerie();
+    mostrarSerie(null);
+    colgar(poolDe(p));
+    mostrarSerie(p);
+  });
+
+  /* la cartela: qué serie está colgada */
+  var cartela = document.getElementById('cartela'), serieActual = null;
+  function mostrarSerie(p) {
+    serieActual = p;
+    if (!p) { cartela.hidden = true; return; }
+    cartela.innerHTML = '';
+    var b = document.createElement('b');
+    b.textContent = p.titulo;
+    cartela.appendChild(b);
+    if (p.anio) cartela.appendChild(document.createTextNode(', ' + p.anio));
+    cartela.href = S.enlace(p);
+    cartela.hidden = false;
+  }
+
+  document.getElementById('vaciar').addEventListener('click', function () {
+    piezas.slice().forEach(sacar);
+    mostrarSerie(null);
+    history.replaceState(null, '', location.pathname);
+  });
+
+  /* compartir: el montaje viaja en el enlace */
+  function codificar() {
+    return piezas.filter(function (pz) { return !archivo[pz.i].propia; }).sort(function (a, b) { return a.z - b.z; })
+      .map(function (pz) { return [archivo[pz.i].codigo, pz.x.toFixed(3), pz.y.toFixed(3), pz.w.toFixed(3)].join(','); }).join(';');
+  }
+  document.getElementById('compartir').addEventListener('click', function () {
+    if (!piezas.length) { decir('la mesa está vacía'); return; }
+    var propias = piezas.some(function (pz) { return archivo[pz.i].propia; });
+    if (propias && !codificar()) { decir('tus imágenes no viajan en el enlace'); return; }
+    var url = location.href.split('#')[0] + '#m=' + codificar() + (serieActual ? '&s=' + serieActual.slug : '');
+    history.replaceState(null, '', url);
+    if (navigator.clipboard) navigator.clipboard.writeText(url).then(function () { decir(propias ? 'enlace copiado (sin tus imágenes)' : 'enlace copiado'); }, function () { decir('copiá el enlace de arriba'); });
+    else decir('copiá el enlace de arriba');
+  });
+
+  /* ---- imágenes propias ----
+     quien visita puede sumar las suyas a la mesa. Quedan solo en su navegador:
+     no se suben a ningún lado ni viajan en el enlace de "compartir". */
+  var PROPIA = { titulo: 'tu imagen', slug: '' };
+  var entrada = document.getElementById('propia');
+  document.getElementById('subir').addEventListener('click', function () { entrada.click(); });
+  entrada.addEventListener('change', function () { agregarPropias(entrada.files); entrada.value = ''; });
+  function agregarPropias(files, punto) {
+    var lista = [].slice.call(files || []).filter(function (f) { return /^image\//.test(f.type); });
+    if (!lista.length) { decir('eso no es una imagen'); return; }
+    lista.forEach(function (f, n) {
+      var url = URL.createObjectURL(f), prueba = new Image();
+      prueba.onload = function () {
+        var i = archivo.length, ar = prueba.naturalWidth / prueba.naturalHeight;
+        archivo.push({ src: url, p: PROPIA, propia: true, ar: ar });
+        miniatura(i, true);
+        bandeja.scrollLeft = 0;
+        var v = visible(), w = W(), ancho = angosta() ? Math.min(0.6, v.ancho * 0.6) : Math.min(0.2, v.ancho * 0.3), x, y;
+        if (punto) { x = punto.x / w - ancho / 2; y = punto.y / w - ancho / ar / 2; }
+        else { x = v.x0 + (v.ancho - ancho) / 2; y = v.y0 + (v.alto - ancho / ar) / 2; }
+        elegir(crear(i, x + n * 0.02, y + n * 0.02, ancho));
+      };
+      prueba.onerror = function () { URL.revokeObjectURL(url); decir('no se pudo abrir esa imagen'); };
+      prueba.src = url;
+    });
+  }
+  function conArchivos(e) { return e.dataTransfer && [].indexOf.call(e.dataTransfer.types || [], 'Files') >= 0; }
+  mesa.addEventListener('dragover', function (e) { if (conArchivos(e)) { e.preventDefault(); mesa.classList.add('recibiendo'); } });
+  mesa.addEventListener('dragleave', function () { mesa.classList.remove('recibiendo'); });
+  mesa.addEventListener('drop', function (e) {
+    if (!conArchivos(e)) return;
+    e.preventDefault();
+    mesa.classList.remove('recibiendo');
+    agregarPropias(e.dataTransfer.files, aLocal(e.clientX, e.clientY));
+  });
+  /* si la sueltan fuera de la mesa, que el navegador no se vaya a la imagen */
+  window.addEventListener('dragover', function (e) { if (conArchivos(e)) e.preventDefault(); });
+  window.addEventListener('drop', function (e) { if (conArchivos(e)) e.preventDefault(); });
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && elegida && document.activeElement === document.body) { e.preventDefault(); sacar(elegida); }
+    if (e.key === '+' || e.key === '=') zoom(1.25);
+    if (e.key === '-') zoom(0.8);
+  });
+  window.addEventListener('resize', function () { piezas.forEach(ubicar); });
+
+  /* al abrir: un montaje compartido, o uno al azar para empezar */
+  aplicarVista();
+  var m = /#m=([^&]+)/.exec(location.hash);
+  if (m) {
+    decodeURIComponent(m[1]).split(';').forEach(function (t) {
+      var v = t.split(','), n = v.slice(1).map(Number);
+      /* enlaces nuevos: código de la imagen; los viejos traían un número de orden */
+      var i = /^\d+$/.test(v[0]) ? +v[0] : porCodigo[v[0]];
+      if (i !== undefined && n.length === 3 && !n.some(isNaN)) crear(i, n[0], n[1], n[2]);
+    });
+    var sm = /[#&]s=([^&]+)/.exec(location.hash), si = sm ? S.porSlug(decodeURIComponent(sm[1])) : -1;
+    if (si >= 0) mostrarSerie(S.P[si]);
+  } else {
+    document.getElementById('azar').click();
+  }
+})();
+</script>
+</body>
+</html>

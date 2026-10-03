@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matías Romero</title>
+<meta name="description" content="Matías Romero, artista visual. Buenos Aires. Obras hechas con imágenes encontradas: tours virtuales, Google Maps, videojuegos, carteles.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Matías Romero">
+<meta property="og:title" content="Matías Romero">
+<meta property="og:description" content="Matías Romero, artista visual. Buenos Aires. Obras hechas con imágenes encontradas: tours virtuales, Google Maps, videojuegos, carteles.">
+<!-- vista previa al compartir: cuando el sitio tenga dominio, poné la dirección completa, por ejemplo https://matiasromero.com/img/og.jpg -->
+<meta property="og:image" content="img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Jacquarda+Bastarda+9&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css?v=34">
+</head>
+<body>
+<header class="cabecera">
+  <a class="nombre" href="index.html">Matías Romero</a>
+  <nav>
+    <a href="indice.html">series</a>
+    <a href="montaje.html">mesa de trabajo</a>
+    <a href="textos.html">textos</a>
+    <a href="info.html">info</a>
+  </nav>
+</header>
+
+<div class="franja">
+  <a class="vecino anterior" id="ant"></a>
+  <div class="obra" id="obra"></div>
+  <a class="vecino siguiente" id="sig"></a>
+</div>
+<div class="vecinos">
+  <a id="ant-txt"></a>
+  <a id="sig-txt"></a>
+</div>
+
+<main class="contenido">
+  <section class="ficha">
+    <div class="datos">
+      <h1 id="titulo"></h1>
+      <span id="anio"></span>
+      <span id="tecnica"></span>
+      <span class="gris" id="donde"></span>
+    </div>
+  </section>
+
+  <section class="galeria" id="galeria" aria-label="Imágenes"></section>
+
+  <div class="posicion">
+    <nav class="mini" id="mini" aria-label="Ir a otro proyecto"></nav>
+    <span id="pos"></span>
+  </div>
+</main>
+
+<script src="data.js?v=19"></script>
+<script src="recortes.js?v=4"></script>
+<script src="sitio.js?v=16"></script>
+<script>
+(function () {
+  var S = window.Sitio, P = S.P;
+  var slug = new URLSearchParams(location.search).get('p');
+  var i = S.porSlug(slug);
+  if (i < 0) {
+    var t = S.T.filter(function (x) { return x.slug === slug; })[0];
+    location.replace(t ? S.enlace(t) : 'index.html');
+    return;
+  }
+
+  var p = P[i];
+  var ant = P[(i - 1 + P.length) % P.length];
+  var sig = P[(i + 1) % P.length];
+
+  document.title = p.titulo + ' — Matías Romero';
+  document.documentElement.style.setProperty('--desfase', S.desfase(i) + 'px');
+
+  /* vecinos de costura */
+  var aAnt = document.getElementById('ant'), aSig = document.getElementById('sig');
+  aAnt.href = S.enlace(ant); aAnt.setAttribute('aria-label', 'Anterior: ' + ant.titulo);
+  aSig.href = S.enlace(sig); aSig.setAttribute('aria-label', 'Siguiente: ' + sig.titulo);
+  aAnt.appendChild(S.tapa(ant, '', false, 'c'));
+  aSig.appendChild(S.tapa(sig, '', false, 'c'));
+  var tAnt = document.getElementById('ant-txt'), tSig = document.getElementById('sig-txt');
+  tAnt.href = S.enlace(ant); tAnt.textContent = '← ' + ant.titulo;
+  tSig.href = S.enlace(sig); tSig.textContent = sig.titulo + ' →';
+
+  /* la obra en el centro */
+  var obra = document.getElementById('obra');
+  var videosAbajo = p.videos.slice();
+  if (p.imagenes.length) {
+    obra.appendChild(S.tapa(p, p.titulo));
+  } else if (p.videos.length) {
+    var marco = document.createElement('div');
+    marco.className = 'marco-video';
+    marco.appendChild(S.vimeoEmbed(videosAbajo.shift()));
+    obra.appendChild(marco);
+  }
+
+  /* ficha */
+  document.getElementById('titulo').textContent = p.titulo;
+  document.getElementById('anio').textContent = p.anio || '';
+  document.getElementById('tecnica').textContent = p.tecnica || '';
+  document.getElementById('donde').textContent = p.donde ? 'Encontrado en: ' + p.donde : '';
+
+  /* galería: el resto de las imágenes y los videos */
+  var gal = document.getElementById('galeria');
+  /* en los proyectos "unidas" van todas las imágenes pegadas, como una sola */
+  if (p.unidas) gal.classList.add('unidas');
+  var desde = p.portada ? 0 : 1;   /* la primera ya está arriba, entre los vecinos */
+  p.imagenes.slice(desde).forEach(function (src, k) {
+    gal.appendChild(S.imagen(src, p.titulo + ' ' + (k + 1 + desde), !p.unidas));
+  });
+  videosAbajo.forEach(function (v) {
+    var d = document.createElement('div');
+    d.className = 'video';
+    d.appendChild(S.vimeoEmbed(v));
+    gal.appendChild(d);
+  });
+  if (!gal.children.length) gal.remove();
+
+  /* posición en la tira */
+  S.miniTira(document.getElementById('mini'), i);
+  document.getElementById('pos').textContent = (i + 1) + ' de ' + P.length;
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') location.href = S.enlace(ant);
+    if (e.key === 'ArrowRight') location.href = S.enlace(sig);
+  });
+})();
+</script>
+</body>
+</html>
