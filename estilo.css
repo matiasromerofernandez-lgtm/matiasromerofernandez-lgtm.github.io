@@ -5,9 +5,7 @@
   --line: #C9CDD3;
   --accent: #3F72B0;
   --pad: clamp(16px, 4vw, 40px);
-  --desfase: 6px;
   --alto: min(66vh, 640px);     /* alto de la tira */
-  --franja: min(72vh, 700px);   /* alto de la obra en la página de proyecto */
 }
 
 /* imagen recortada (sin bordes blancos) */
@@ -251,57 +249,20 @@ body.home {
 .mini a:hover::before { background: var(--accent); top: 4px; height: 14px; }
 .mini a.actual::before { background: var(--ink); top: 2px; height: 18px; }
 
-/* ---------- página de proyecto ---------- */
-.franja {
-  display: flex;
-  height: var(--franja);
-  overflow: hidden;
-}
-.vecino {
-  flex: 0 0 clamp(28px, 8vw, 120px);
-  position: relative;
-  overflow: hidden;
-  transition: flex-basis 0.25s ease;
-}
-.vecino:hover { flex-basis: clamp(40px, 15vw, 220px); }
-.vecino .recorte { position: absolute; top: 0; height: 100%; width: calc(var(--franja) * var(--ar)); }
-.vecino.anterior .recorte { right: 0; transform: translateY(calc(var(--desfase) * -1)); }
-.vecino.siguiente .recorte { left: 0; transform: translateY(var(--desfase)); }
-.vecino img.entera { width: 100%; height: 100%; object-fit: cover; display: block; }
-.vecino.anterior img.entera { object-position: right center; transform: translateY(calc(var(--desfase) * -1)); }
-.vecino.siguiente img.entera { object-position: left center; transform: translateY(var(--desfase)); }
-.obra {
-  flex: 1 1 auto;
-  min-width: 0;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.obra::before, .obra::after {
-  content: "";
-  position: absolute;
-  top: 0; bottom: 0;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.7);
-  z-index: 1;
-}
-.obra::before { left: 0; }
-.obra::after { right: 0; }
-.obra .recorte { width: min(100%, calc(var(--franja) * var(--ar))); }
-.obra img.entera { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; }
-.obra .marco-video { width: 100%; max-width: calc(var(--franja) * 16 / 9); aspect-ratio: 16 / 9; }
-.obra iframe, .video iframe { width: 100%; height: 100%; border: 0; display: block; }
+/* ---------- página de proyecto ----------
+   arriba el título y los datos; abajo las fotos, una debajo de la otra.
+   La serie anterior y la siguiente aparecen solo al final, como texto. */
+.video iframe { width: 100%; height: 100%; border: 0; display: block; }
 
 .vecinos {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px var(--pad) 0;
   font-size: 14px;
   color: var(--mute);
 }
 .vecinos a { padding: 6px 0; }
+.vecinos a:last-child { text-align: right; }
 
 .contenido {
   max-width: 1240px;
