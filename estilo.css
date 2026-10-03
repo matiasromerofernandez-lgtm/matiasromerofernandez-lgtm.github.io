@@ -49,8 +49,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 .cabecera .nombre { font-size: 27px; }
 .cabecera nav a { font-size: 21px; }
 
-.cabecera nav { display: flex; gap: 28px; }
-.cabecera nav a { padding: 6px 0; }
+/* si el menú no entra en una línea, baja entero a la siguiente: un botón nunca se parte en dos */
+.cabecera nav { display: flex; flex-wrap: wrap; gap: 0 28px; }
+.cabecera nav a { padding: 6px 0; white-space: nowrap; }
+@media (max-width: 600px) { .cabecera nav { column-gap: 22px; } }
 .cabecera nav a[aria-current="page"] { text-decoration: underline; text-underline-offset: 4px; }
 
 /* ---------- la profundidad (home) ---------- */
@@ -400,7 +402,7 @@ body.home {
 .info .bio .grande { font-size: 19px; line-height: 1.6; }
 .info .bio .grande .nombre-info { text-shadow: 1px 0 0 currentColor; }
 .info .bio .contacto { font-size: 19px; line-height: 1.6; gap: 2px; }
-.info .bio .contacto a { color: var(--mute); }
+.info .bio .contacto a { color: var(--mute); overflow-wrap: anywhere; }   /* el mail largo no se sale en celulares chicos */
 .info .bio .contacto a:hover { color: var(--accent); }
 
 /* toda la página en la pixelada: tamaños parejos, sin suavizado */
