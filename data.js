@@ -236,7 +236,11 @@ window.PROYECTOS = [
       "https://payload.cargocollective.com/1/21/683453/14405294/camara-selfie-web-19_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14405294/nnnnnn-19_2000_c.png"
     ],
-    "videos": []
+    "videos": [],
+    "enlace": {
+      "texto": "ver en instagram",
+      "url": "https://www.instagram.com/camara_selfie/"
+    }
   },
   {
     "slug": "cada-vez-te-quiero-mas",
