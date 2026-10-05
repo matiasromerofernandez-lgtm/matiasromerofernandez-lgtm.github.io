@@ -285,6 +285,10 @@ body.home {
 }
 .ficha h1 { margin: 0 0 10px; font-size: 34px; font-weight: 500; line-height: 1.15; }
 .ficha .gris { color: var(--mute); }
+/* link a la página propia de una obra (por ejemplo backstage) */
+.enlace-obra { align-self: flex-start; margin-top: 10px; color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+.enlace-obra:hover { color: var(--accent); }
+.enlace-obra.al-final { margin-top: 0; font-size: 19px; }
 .ficha .texto { flex: 2 1 460px; min-width: 0; margin: 0; font-size: 19px; line-height: 1.55; max-width: 680px; }
 
 .galeria { display: flex; flex-direction: column; align-items: center; gap: clamp(90px, 16vh, 180px); }

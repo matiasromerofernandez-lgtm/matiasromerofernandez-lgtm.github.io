@@ -22,6 +22,8 @@
     oculto    (opcional) true = no aparece en ningún lado (para esconderlo por un tiempo)
     fueraDeLaMesa (opcional) imágenes de la lista que siguen en la serie pero no aparecen
               en la mesa de trabajo (copiá la misma dirección que en "imagenes")
+    enlace    (opcional) una página propia de la obra: {"texto": "entrar a ...", "url": "https://..."}
+              aparece en la página de la serie, arriba (debajo de los datos) y al final
     estrofas  (opcional, textos) el texto de la obra, una lista por página
     pdf       (opcional, textos) archivo PDF para descargar
     seccion   (opcional) "textos" = va en la sección de textos, no entre las imágenes
@@ -192,7 +194,11 @@ window.PROYECTOS = [
       "https://payload.cargocollective.com/1/21/683453/14630080/Sin-titulo-2_Mesa-de-trabajo-1-copia-50_1500.png",
       "https://payload.cargocollective.com/1/21/683453/14630080/Sin-titulo-2_Mesa-de-trabajo-1-copia-54_1500.png"
     ],
-    "videos": []
+    "videos": [],
+    "enlace": {
+      "texto": "entrar a backstage",
+      "url": "https://matiasromero.com.ar/backstage/"
+    }
   },
   {
     "slug": "camara-selfie",
