@@ -794,7 +794,6 @@ window.PROYECTOS = [
       "https://payload.cargocollective.com/1/21/683453/14122819/free-look-01_1500.png",
       "https://payload.cargocollective.com/1/21/683453/14122819/free-look-02_1500.png",
       "https://payload.cargocollective.com/1/21/683453/14122819/free-look-03_1500.png",
-      "https://payload.cargocollective.com/1/21/683453/14122819/seleccion-counter-01_1_1500.png",
       "https://payload.cargocollective.com/1/21/683453/14122819/Captura-de-pantalla-2024-01-26-a-las-20.05.37_2000_c.JPG",
       "https://payload.cargocollective.com/1/21/683453/14122819/Captura-de-pantalla-2024-01-26-a-las-20.06.05_26_1500.JPG"
     ],
