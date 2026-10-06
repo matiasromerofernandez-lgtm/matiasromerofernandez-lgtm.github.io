@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Jacquarda+Bastarda+9&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="estilo.css?v=41">
+<link rel="stylesheet" href="estilo.css?v=43">
 </head>
 <body class="montaje">
 <header class="cabecera">
@@ -43,7 +43,7 @@
   <button type="button" id="azar">colgar al azar</button>
   <button type="button" id="series">x series</button>
   <button type="button" id="vaciar">vaciar</button>
-  <button type="button" id="compartir">compartir</button>
+  <button type="button" id="descargar">descargar</button>
   <span class="zoom" role="group" aria-label="Zoom">
     <button type="button" id="alejar" aria-label="Alejar">−</button>
     <button type="button" id="zoom-valor" aria-label="Volver al tamaño original">100%</button>
@@ -69,7 +69,7 @@
 </div>
 <div class="bandeja" id="bandeja" aria-label="Todas las imágenes del archivo"></div>
 
-<script src="data.js?v=24"></script>
+<script src="data.js?v=26"></script>
 <script src="recortes.js?v=4"></script>
 <script src="piezas.js?v=6"></script>
 <script src="sitio.js?v=16"></script>
@@ -604,24 +604,125 @@
     history.replaceState(null, '', location.pathname);
   });
 
-  /* compartir: el montaje viaja en el enlace */
-  function codificar() {
-    return piezas.filter(function (pz) { return !archivo[pz.i].propia; }).sort(function (a, b) { return a.z - b.z; })
-      .map(function (pz) { return [archivo[pz.i].codigo, pz.x.toFixed(3), pz.y.toFixed(3), pz.w.toFixed(3)].join(','); }).join(';');
-  }
-  document.getElementById('compartir').addEventListener('click', function () {
+  /* ---- descargar: el montaje como una imagen (png) ----
+     (reemplaza al botón "compartir"; los enlaces de montajes compartidos antes siguen abriendo)
+     Se dibuja todo lo que está en la mesa con las imágenes grandes, sobre fondo blanco,
+     con la misma sombra mínima de las copias. Abajo, chiquito, de dónde viene. */
+  var descargando = false;
+  document.getElementById('descargar').addEventListener('click', function () {
     if (!piezas.length) { decir('la mesa está vacía'); return; }
-    var propias = piezas.some(function (pz) { return archivo[pz.i].propia; });
-    if (propias && !codificar()) { decir('tus imágenes no viajan en el enlace'); return; }
-    var url = location.href.split('#')[0] + '#m=' + codificar() + (serieActual ? '&s=' + serieActual.slug : '');
-    history.replaceState(null, '', url);
-    if (navigator.clipboard) navigator.clipboard.writeText(url).then(function () { decir(propias ? 'enlace copiado (sin tus imágenes)' : 'enlace copiado'); }, function () { decir('copiá el enlace de arriba'); });
-    else decir('copiá el enlace de arriba');
+    if (descargando) return;
+    descargando = true;
+    decir('preparando la imagen…');
+    dibujarMontaje().then(function (blob) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'montaje-matias-romero-' + fechaCorta() + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 60000);
+      decir('imagen descargada');
+    }).catch(function () {
+      decir('no se pudo armar la imagen');
+    }).then(function () { descargando = false; });
   });
+  function dos(n) { return (n < 10 ? '0' : '') + n; }
+  function fechaCorta() {
+    var d = new Date();
+    return d.getFullYear() + dos(d.getMonth() + 1) + dos(d.getDate()) + '-' + dos(d.getHours()) + dos(d.getMinutes());
+  }
+  function cargar(src) {
+    return new Promise(function (ok, mal) {
+      var im = new Image();
+      im.onload = function () { ok(im); };
+      im.onerror = mal;
+      im.src = src;
+    });
+  }
+  /* la imagen grande; si no está, la chica */
+  function cargarPieza(it) {
+    if (it.propia) return cargar(it.src);
+    return cargar(S.local(it.src, 'g')).catch(function () { return cargar(S.local(it.src, 'c')); });
+  }
+  /* lo mismo que el filtro #sin-blanco de la mesa: blancos y grises muy claros se vuelven transparentes */
+  function sinBlanco(lienzoChico) {
+    var c = lienzoChico.getContext('2d');
+    var d = c.getImageData(0, 0, lienzoChico.width, lienzoChico.height), p = d.data;
+    for (var k = 0; k < p.length; k += 4) {
+      var a = 28.5 - 10 * (p[k] + p[k + 1] + p[k + 2]) / 255;
+      p[k + 3] = Math.round(p[k + 3] * Math.max(0, Math.min(1, a)));
+    }
+    c.putImageData(d, 0, 0);
+  }
+  function dibujarMontaje() {
+    var orden = piezas.slice().sort(function (a, b) { return a.z - b.z; });
+    /* cada pieza, en px de la mesa sin zoom */
+    var cajas = orden.map(function (pz) {
+      return { it: archivo[pz.i], x: pz.el.offsetLeft, y: pz.el.offsetTop, w: pz.el.offsetWidth, h: pz.el.offsetHeight };
+    });
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    cajas.forEach(function (c) {
+      x0 = Math.min(x0, c.x); y0 = Math.min(y0, c.y);
+      x1 = Math.max(x1, c.x + c.w); y1 = Math.max(y1, c.y + c.h);
+    });
+    var bw = x1 - x0, bh = y1 - y0;
+    /* tamaño final: el lado largo cerca de 3200 px, sin pasar de 14 millones de píxeles (límite de los celulares) */
+    var largo = Math.max(bw, bh), s = 3200 / largo;
+    var margen = largo * 0.07;
+    var W0 = (bw + 2 * margen) * s, H0 = (bh + 2 * margen) * s;
+    if (W0 * H0 > 14e6) { var f = Math.sqrt(14e6 / (W0 * H0)); s *= f; W0 *= f; H0 *= f; }
+    var tela = document.createElement('canvas');
+    tela.width = Math.round(W0); tela.height = Math.round(H0);
+    var ctx = tela.getContext('2d');
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, tela.width, tela.height);
+    ctx.imageSmoothingQuality = 'high';
+    var letra = Math.max(14, Math.round(Math.min(tela.width, tela.height) * 0.016));
+    var fuentes = document.fonts && document.fonts.load ? document.fonts.load(letra + 'px "Jacquarda Bastarda 9"').catch(function () {}) : Promise.resolve();
+    return Promise.all([fuentes].concat(cajas.map(function (c) { return cargarPieza(c.it).catch(function () { return null; }); })))
+      .then(function (res) {
+        var imgs = res.slice(1);
+        cajas.forEach(function (c, n) {
+          var im = imgs[n];
+          if (!im) return;
+          var it = c.it;
+          var dx = (c.x - x0 + margen) * s, dy = (c.y - y0 + margen) * s, dw = c.w * s, dh = c.h * s;
+          var r = it.propia ? null : (it.recorte || S.R[it.src.replace('https://payload.cargocollective.com', '')]);
+          var sx = 0, sy = 0, sw = im.naturalWidth, sh = im.naturalHeight;
+          if (r) { var k = im.naturalWidth / r[0]; sx = r[2] * k; sy = r[3] * k; sw = (r[4] - r[2]) * k; sh = (r[5] - r[3]) * k; }
+          if (!it.grupal) {   /* el papel: blanco con una sombra mínima */
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.12)';
+            ctx.shadowBlur = 6 * s;
+            ctx.shadowOffsetY = 2 * s;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(dx, dy, dw, dh);
+            ctx.restore();
+          }
+          if (it.grupal && !it.local) {
+            var chico = document.createElement('canvas');
+            chico.width = Math.max(1, Math.round(dw)); chico.height = Math.max(1, Math.round(dh));
+            chico.getContext('2d').drawImage(im, sx, sy, sw, sh, 0, 0, chico.width, chico.height);
+            sinBlanco(chico);
+            ctx.drawImage(chico, dx, dy, dw, dh);
+          } else {
+            ctx.drawImage(im, sx, sy, sw, sh, dx, dy, dw, dh);
+          }
+        });
+        ctx.fillStyle = '#5B6068';
+        ctx.font = letra + 'px "Jacquarda Bastarda 9", Jost, serif';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillText('montaje en la mesa de trabajo de Matías Romero · matiasromero.com.ar', margen * s * 0.5, tela.height - margen * s * 0.4);
+        return new Promise(function (ok, mal) {
+          tela.toBlob(function (b) { if (b) ok(b); else mal(new Error('sin imagen')); }, 'image/png');
+        });
+      });
+  }
 
   /* ---- imágenes propias ----
      quien visita puede sumar las suyas a la mesa. Quedan solo en su navegador:
-     no se suben a ningún lado ni viajan en el enlace de "compartir". */
+     no se suben a ningún lado ni quedan guardadas en el sitio; sí salen en la imagen que se descarga. */
   var PROPIA = { titulo: 'tu imagen', slug: '' };
   var entrada = document.getElementById('propia');
   document.getElementById('subir').addEventListener('click', function () { entrada.click(); });

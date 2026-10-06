@@ -11,7 +11,7 @@
               en la página de la serie no se repite.
     anio      año (dejalo "" si todavía no está)
     tecnica   técnica (dejala "" si no querés que aparezca)
-    texto     2 o 3 líneas sobre el proyecto
+    texto     una oración sobre la serie (guardada; por ahora no se muestra en el sitio)
     imagenes  lista de imágenes, en orden. Pueden ser direcciones web
               o archivos de la carpeta "img", por ejemplo "img/subte/01.jpg"
     videos    códigos de Vimeo ("757587667" o "764978361/df58b62b1a")
@@ -37,7 +37,7 @@ window.PROYECTOS = [
     "donde": "tours virtuales",
     "anio": "desde 2026",
     "tecnica": "Capturas de tours virtuales",
-    "texto": "Capturas de tours virtuales.",
+    "texto": "Capturas de pantalla de cielos.",
     "imagenes": [
       "img/www/01.webp",
       "img/www/02.webp",
@@ -56,7 +56,7 @@ window.PROYECTOS = [
     "donde": "noticieros y portales de noticias",
     "anio": "desde 2025",
     "tecnica": "Capturas de pantalla",
-    "texto": "Interferencias en noticieros y portales de noticias: capturas del momento en que, con poco internet, las imágenes todavía se están cargando.",
+    "texto": "Capturas de portales de noticias.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14616824/web-07_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14616824/web-04_2000_c.png",
@@ -97,7 +97,7 @@ window.PROYECTOS = [
     "donde": "tours virtuales",
     "anio": "desde 2021",
     "tecnica": "Capturas de tours virtuales",
-    "texto": "Capturas de tours virtuales.",
+    "texto": "Capturas en tours virtuales.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14370537/cositas-web_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14370537/web-blur-02_1500.png",
@@ -138,7 +138,7 @@ window.PROYECTOS = [
     "donde": "tours virtuales",
     "anio": "desde 2020",
     "tecnica": "Capturas de tours virtuales",
-    "texto": "Capturas de tours virtuales.",
+    "texto": "Autorretratos accidentales de operadores de cámara en tours virtuales.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14630080/Sin-titulo-2_Mesa-de-trabajo-1_1500.png",
       "https://payload.cargocollective.com/1/21/683453/14630080/Sin-titulo-2_Mesa-de-trabajo-1-copia_1500.png",
@@ -206,7 +206,7 @@ window.PROYECTOS = [
     "donde": "tours virtuales",
     "anio": "desde 2020",
     "tecnica": "Capturas de tours virtuales",
-    "texto": "Capturas de tours virtuales.",
+    "texto": "Autorretratos accidentales de cámaras en tours virtuales.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14405294/selfie-01-04_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14405294/selfie-01-01_2000_c.png",
@@ -248,7 +248,7 @@ window.PROYECTOS = [
     "donde": "la cancha de Boca",
     "anio": "desde 2022",
     "tecnica": "Video",
-    "texto": "Videos en la cancha de Boca.",
+    "texto": "Videos del cielo en la cancha de Boca.",
     "imagenes": [],
     "videos": [
       "764978361/df58b62b1a",
@@ -264,7 +264,7 @@ window.PROYECTOS = [
     "donde": "tours virtuales",
     "anio": "desde 2020",
     "tecnica": "Capturas de tours virtuales",
-    "texto": "Capturas de tours virtuales.",
+    "texto": "Capturas de pantalla en tours virtuales de aseguradoras.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14367212/servicios-del-desastre-2024-www-01_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14367212/servicios-del-desastre-2024-www-02_2000_c.png",
@@ -313,7 +313,7 @@ window.PROYECTOS = [
     "donde": "tours virtuales",
     "anio": "desde 2020",
     "tecnica": "Capturas de tours virtuales",
-    "texto": "Capturas de tours virtuales.",
+    "texto": "Capturas de pantalla y collage en tours virtuales de iglesias.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14407907/repuesto-de-dios-37a-01_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14407907/repuesto-de-dios-37a-02_2000_c.png",
@@ -346,7 +346,7 @@ window.PROYECTOS = [
     "donde": "tours virtuales",
     "anio": "desde 2020",
     "tecnica": "Capturas de tours virtuales",
-    "texto": "Capturas de tours virtuales.",
+    "texto": "Capturas de pantalla en tours virtuales con la vista Dollhouse.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14132137/dollhouse-24-de-noviembre-01_1500.png",
       "https://payload.cargocollective.com/1/21/683453/14132137/dollhouse-24-de-noviembre-02_1500.png",
@@ -380,7 +380,7 @@ window.PROYECTOS = [
     "donde": "carteles de mascotas perdidas y encontradas",
     "anio": "2025",
     "tecnica": "Fotomontaje",
-    "texto": "Montajes con fotos de los carteles de mascotas perdidas y encontradas.",
+    "texto": "Montajes con las fotos de los carteles de mascotas perdidas y encontradas.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/13790957/web-15_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/13790957/web-12_2000_c.png",
@@ -396,7 +396,7 @@ window.PROYECTOS = [
     "donde": "carteles de mascotas perdidas y encontradas",
     "anio": "desde 2022",
     "tecnica": "Texto",
-    "texto": "Construida con carteles de mascotas perdidas y encontradas en Buenos Aires.",
+    "texto": "Un texto armado con carteles de mascotas perdidas y encontradas en Buenos Aires.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14507758/Untitled-2-02_18_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14507758/dasdasdasdas-01_2000_c.png",
@@ -638,7 +638,7 @@ window.PROYECTOS = [
     "donde": "carteles de Buenos Aires",
     "anio": "2021",
     "tecnica": "Fotografía digital",
-    "texto": "Fotos de carteles por Buenos Aires.",
+    "texto": "Carteles fotografiados por Buenos Aires.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14367223/Untitled-17-01_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14367223/Untitled-17-02_2000_c.png",
@@ -667,7 +667,7 @@ window.PROYECTOS = [
     "donde": "peluquerías",
     "anio": "desde 2021",
     "tecnica": "Fotografía digital",
-    "texto": "Fotos del mismo retrato, repetido en distintas peluquerías.",
+    "texto": "El mismo retrato, repetido en distintas peluquerías.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14390949/web-11_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14390949/web-20_2000_c.png",
@@ -704,7 +704,7 @@ window.PROYECTOS = [
     "donde": "tours virtuales",
     "anio": "2021",
     "tecnica": "Capturas de tours virtuales",
-    "texto": "Capturas de tours virtuales.",
+    "texto": "Capturas de pantalla en tours virtuales de maniquís.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14431587/fotomatoon-junto_2000_c.png"
     ],
@@ -716,7 +716,7 @@ window.PROYECTOS = [
     "donde": "mi bolsillo",
     "anio": "desde 2022",
     "tecnica": "Fotografía digital",
-    "texto": "Fotos sacadas sin querer, con la cámara en el bolsillo.",
+    "texto": "Fotos sacadas sin querer, con el celular en el bolsillo.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14545133/fotografia-de-bolsillo-01_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14545133/fotografia-de-bolsillo-02_2000_c.png",
@@ -734,10 +734,10 @@ window.PROYECTOS = [
   {
     "slug": "el-antes-de-los-monstruitos",
     "titulo": "el antes de los monstruitos",
-    "donde": "las primeras GANs",
+    "donde": "videos de YouTube de las primeras GANs",
     "anio": "2018 – 2021",
     "tecnica": "Collage digital",
-    "texto": "Collages hechos con capturas de pantalla de las primeras GANs de inteligencia artificial, construyendo un bestiario.",
+    "texto": "Fotomontajes de videos de YouTube.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14390964/Captura-de-pantalla-2024-01-26-a-las-15.15.16_2000_c.JPG",
       "https://payload.cargocollective.com/1/21/683453/14390964/el-antes-de-los-mounstrito-01-06_1334.png",
@@ -767,7 +767,7 @@ window.PROYECTOS = [
     "donde": "Counter-Strike",
     "anio": "2021",
     "tecnica": "Capturas de videojuego",
-    "texto": "Fotografías hechas dentro del videojuego Counter-Strike.",
+    "texto": "Fotografías hechas dentro de Counter-Strike.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14122819/seleccion-counter-01_1500.png",
       "https://payload.cargocollective.com/1/21/683453/14122819/seleccion-counter-02_1500.png",
@@ -822,7 +822,7 @@ window.PROYECTOS = [
     "donde": "Iruya, Salta",
     "anio": "2024",
     "tecnica": "Fotografía",
-    "texto": "Fotos de una final de fútbol en Iruya, Salta.",
+    "texto": "Una final de fútbol en Iruya, Salta.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/11422323/triptico-01_1500.jpg",
       "https://payload.cargocollective.com/1/21/683453/11422323/xxxx-01_2000_c.jpg",
@@ -876,7 +876,7 @@ window.PROYECTOS = [
     "donde": "la noche de Madrid",
     "anio": "2016",
     "tecnica": "Fotografía",
-    "texto": "Fotos de noche en Madrid, usando la calle como taller.",
+    "texto": "Fotografías en la noche de Madrid.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/13090265/cerouno4_1078.jpg",
       "https://payload.cargocollective.com/1/21/683453/13090265/cerouno5_1078.jpg",
@@ -907,7 +907,7 @@ window.PROYECTOS = [
     "donde": "el subte de Buenos Aires",
     "anio": "2022",
     "tecnica": "Video",
-    "texto": "Video en el subte de Buenos Aires.",
+    "texto": "Un video en el subte de Buenos Aires.",
     "imagenes": [],
     "videos": [
       "757587667"
@@ -919,7 +919,7 @@ window.PROYECTOS = [
     "donde": "Google Maps",
     "anio": "2021",
     "tecnica": "Capturas de pantalla y video",
-    "texto": "Capturas del Río de la Plata en Google Maps, en los puntos donde se marca el error de costura entre imágenes.",
+    "texto": "El Río de la Plata en Google Maps, donde se ve la costura entre las imágenes satelitales.",
     "imagenes": [
       "https://payload.cargocollective.com/1/21/683453/14367191/rio-de-la-plata-www-11_2000_c.png",
       "https://payload.cargocollective.com/1/21/683453/14367191/web_Mesa-de-trabajo-1-copia-22_2000_c.png",
